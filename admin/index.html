@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>정한의원 어드민 · 원장칼럼</title>
-<link rel="icon" type="image/png" href="/assets/img/logo/symbol.png">
+<link rel="icon" type="image/png" href="logo/symbol.png">
 <style>
   :root { --p:#2f5e4b; --pd:#1f4335; --acc:#b8975a; --line:#e3e0d8; --bg:#f4f5f3; --text:#2b2b2b; --muted:#6b6b6b; --danger:#c0392b; }
   * { box-sizing:border-box; }
@@ -144,25 +144,25 @@
 <!-- 로그인 -->
 <div id="login">
   <form onsubmit="login(event)">
-    <img src="/assets/img/logo/logo-horizontal.png" alt="정한의원">
+    <img src="logo/logo-horizontal.png" alt="정한의원">
     <h1>홈페이지 관리자</h1>
     <input type="password" id="pw" placeholder="비밀번호" autofocus autocomplete="current-password">
     <label id="rememberRow" class="hidden" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:0 0 12px;text-align:left"><input type="checkbox" id="remember" checked style="width:auto;margin:0"> 이 컴퓨터에서 로그인 유지</label>
     <button type="submit">로그인</button>
     <div class="err" id="loginErr"></div>
-    <p id="loginHelp" class="hidden" style="font-size:12px;color:var(--muted);line-height:1.6;margin:14px 0 0">접속 키는 GitHub 계정에서 발급합니다.<br>발급 방법은 <b>배포가이드.md</b> 3번 항목을 보세요.</p>
+    <p id="loginHelp" class="hidden" style="font-size:12px;color:var(--muted);line-height:1.6;margin:14px 0 0">접속 키는 GitHub 계정에서 발급합니다.<br>발급 방법은 <b>배포가이드.md</b> 5번 항목을 보세요.</p>
   </form>
 </div>
 
 <!-- 앱 -->
 <div id="app" class="hidden">
   <aside>
-    <div class="brand"><img src="/assets/img/logo/logo-horizontal.png" alt="정한의원"><small>홈페이지 관리자</small></div>
+    <div class="brand"><img src="logo/logo-horizontal.png" alt="정한의원"><small>홈페이지 관리자</small></div>
     <nav>
       <a href="#list" id="navList" class="active">📋 칼럼 목록</a>
       <a href="#new" id="navNew">✏️ 새 칼럼 쓰기</a>
-      <a href="/pages/columns/index.html" target="_blank">🌐 홈페이지 칼럼 보기</a>
-      <a href="/" target="_blank">🏠 홈페이지 메인</a>
+      <a href="/pages/columns/index.html" id="navSiteColumns" target="_blank">🌐 홈페이지 칼럼 보기</a>
+      <a href="/" id="navSiteHome" target="_blank">🏠 홈페이지 메인</a>
       <button onclick="rebuild()" id="btnRebuild">🔄 전체 다시 생성 (SEO 갱신)</button>
       <button onclick="logout()">🚪 로그아웃</button>
     </nav>
@@ -341,8 +341,11 @@
 // ---------- 공통 ----------
 // 두 가지 저장 방식:
 //  · 로컬(localhost): node tools/admin-server.js 가 파일을 직접 씀 (비밀번호 로그인)
-//  · 인터넷(배포된 사이트): GitHub 저장소에 글을 저장 → Netlify 가 자동으로 페이지 생성 (GitHub 접속 키 로그인)
+//  · 인터넷(Cloudflare Pages 어드민): GitHub 저장소(main)에 글을 저장 → Cloudflare Pages 가 홈페이지를 자동 생성 (GitHub 접속 키 로그인)
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+// 홈페이지 주소 (어드민은 별도 주소에서 돌아가므로 홈페이지 파일은 모두 이 주소 기준으로 가리킴)
+const SITE = () => (backend === gh ? String(cfg.siteUrl || "").replace(/\/+$/, "") : "");
+const siteHref = (p) => (p && p.startsWith("/") ? SITE() + p : p);
 let cfg = { owner: "", repo: "", branch: "main", siteUrl: "", buildHook: "", author: "정석환 원장", categories: [] };
 let token = sessionStorage.getItem("adminToken") || localStorage.getItem("adminToken") || "";
 let meta = { categories: [], author: "정석환 원장" };
@@ -492,6 +495,11 @@ const gh = {
     validate(b);
     const slug = safeSlug(b.slug) || `${b.published}-column-${Date.now().toString(36).slice(-4)}`;
     const existing = b.originalSlug ? await this.get(b.originalSlug).catch(() => null) : null;
+    // 새 주소(slug)가 저장소에 이미 있는 글과 겹치면 멈춤 (다른 글을 덮어쓰지 않도록)
+    if (!existing || existing.slug !== slug) {
+      const dup = await this.req(`/contents/${this.dataPath(slug)}?ref=${cfg.branch}`, { raw: true, allow404: true });
+      if (dup != null) throw new Error(`같은 주소의 글이 이미 있습니다: ${slug}\n발행 설정에서 글 주소(슬러그)를 바꿔 주세요.`);
+    }
     const files = [];
     if (existing && existing.slug !== slug) files.push({ path: this.dataPath(existing.slug), remove: true });
     let thumbnail = b.thumbnail || (existing && existing.thumbnail) || "";
@@ -529,17 +537,17 @@ const gh = {
     return { src: `data:image/${ext === "jpg" ? "jpeg" : ext};base64,${bytesToB64(bytes)}`, name };
   },
   async rebuild() {
-    if (!cfg.buildHook) throw new Error("저장할 때마다 Netlify 가 자동으로 다시 생성합니다. 강제 재생성은 admin/config.json 의 buildHook 을 설정하면 쓸 수 있습니다");
+    if (!cfg.buildHook) throw new Error("저장할 때마다 Cloudflare Pages 가 홈페이지를 자동으로 다시 만듭니다. 강제 재생성이 필요하면 Cloudflare 대시보드 → 프로젝트 → Deployments → Retry deployment 를 누르세요");
     await fetch(cfg.buildHook, { method: "POST", mode: "no-cors" });
     return { published: "-", hook: true };
   },
-  postUrl: (slug) => `/pages/columns/${slug}.html`,
-  // Netlify 빌드가 끝나 새 커밋이 반영될 때까지 기다림 (최대 4분)
+  postUrl: (slug) => `${SITE()}/pages/columns/${slug}.html`,
+  // Cloudflare Pages 빌드가 끝나 새 커밋이 반영될 때까지 기다림 (최대 4분)
   async waitDeploy(sha, onTick) {
     const started = Date.now();
     while (Date.now() - started < 240000) {
       await new Promise((r) => setTimeout(r, 6000));
-      try { const info = await (await fetch(`/build-info.json?t=${Date.now()}`, { cache: "no-store" })).json(); if (info.commit === sha) return true; } catch (e) {}
+      try { const info = await (await fetch(`${SITE()}/build-info.json?t=${Date.now()}`, { cache: "no-store" })).json(); if (info.commit === sha) return true; } catch (e) {}
       if (onTick) onTick(Math.round((Date.now() - started) / 1000));
     }
     return false;
@@ -554,7 +562,9 @@ async function loadConfig() {
   $("pw").placeholder = isGh ? "GitHub 접속 키 (github_pat_… 로 시작)" : "비밀번호";
   $("loginHelp").classList.toggle("hidden", !isGh);
   $("rememberRow").classList.toggle("hidden", !isGh);
-  $("btnRebuild").textContent = isGh ? "🔄 강제 재생성 (Netlify)" : "🔄 전체 다시 생성 (SEO 갱신)";
+  $("btnRebuild").textContent = isGh ? "🔄 재생성 안내 (Cloudflare)" : "🔄 전체 다시 생성 (SEO 갱신)";
+  $("navSiteColumns").href = SITE() + "/pages/columns/index.html";
+  $("navSiteHome").href = SITE() + "/";
 }
 async function login(e) {
   e.preventDefault();
@@ -594,7 +604,7 @@ async function loadList() {
   if (!list.length) { $("listBody").innerHTML = '<div class="empty">아직 칼럼이 없습니다. "새 칼럼 쓰기"로 첫 글을 올려보세요.</div>'; return; }
   $("listBody").innerHTML = `<table class="table"><thead><tr><th>썸네일</th><th>제목</th><th>카테고리</th><th>발행일</th><th>상태</th><th>관리</th></tr></thead><tbody>` +
     list.map((p) => `<tr>
-      <td class="thumb"><img src="${p.thumbnail || "/assets/img/doctor/doctor-desk.jpg"}" alt=""></td>
+      <td class="thumb"><img src="${siteHref(p.thumbnail || "/assets/img/doctor/doctor-desk.jpg")}" alt=""></td>
       <td class="title"><a href="#edit=${p.slug}">${esc(p.title)}</a><small>${esc(p.description || "").slice(0, 80)}${(p.description || "").length > 80 ? "…" : ""} · 본문 ${p.chars}자 · FAQ ${(p.faqs || []).length}개</small></td>
       <td>${esc(p.category)}</td>
       <td>${p.published}</td>
@@ -626,7 +636,7 @@ async function loadPost(slug) {
     $("f_summary").value = (p.summary || []).join("\n"); $("f_references").value = (p.references || []).join("\n");
     $("f_slug").value = p.slug; $("f_published").value = p.published; $("f_shortTitle").value = p.shortTitle || "";
     $("faqRows").innerHTML = ""; (p.faqs && p.faqs.length ? p.faqs : [{}, {}, {}]).forEach((f) => addFaq(f.q, f.a));
-    if (p.thumbnail) { thumbPath = p.thumbnail; $("thumbPreview").innerHTML = `<img src="${p.thumbnail}" alt="">`; $("thumbName").textContent = p.thumbnail.split("/").pop(); }
+    if (p.thumbnail) { thumbPath = p.thumbnail; $("thumbPreview").innerHTML = `<img src="${siteHref(p.thumbnail)}" alt="">`; $("thumbName").textContent = p.thumbnail.split("/").pop(); }
     $("btnPreview").disabled = p.status === "draft"; $("btnDelete").classList.remove("hidden");
     count("f_title", "c_title", 60); count("f_description", "c_desc", 150); editorStat();
   } catch (e) { toast(e.message, true); location.hash = "#list"; }
@@ -684,7 +694,7 @@ async function pickThumb(input) {
   $("thumbPreview").innerHTML = `<img src="${thumbData}" alt="">`; $("thumbName").textContent = f.name; $("thumbLib").value = "";
   if (!$("f_thumbAlt").value) $("f_thumbAlt").value = f.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
 }
-function useLib(v) { if (!v) return; thumbData = null; thumbName = ""; thumbFile = null; thumbPath = v; $("thumbPreview").innerHTML = `<img src="${v}" alt="">`; $("thumbName").textContent = v.split("/").pop(); if (!$("f_thumbAlt").value) $("f_thumbAlt").value = $("thumbLib").selectedOptions[0].textContent + " 사진"; }
+function useLib(v) { if (!v) return; thumbData = null; thumbName = ""; thumbFile = null; thumbPath = v; $("thumbPreview").innerHTML = `<img src="${siteHref(v)}" alt="">`; $("thumbName").textContent = v.split("/").pop(); if (!$("f_thumbAlt").value) $("f_thumbAlt").value = $("thumbLib").selectedOptions[0].textContent + " 사진"; }
 
 // ---------- 저장 / 삭제 / 미리보기 ----------
 function collect(status) {
@@ -705,10 +715,22 @@ async function save(status) {
   try {
     const data = collect(status);
     if (backend === localBackend) delete data.thumbnailFile;
+    if (backend === gh) {
+      // 발행 전 확인 단계: 무엇이 어떻게 올라가는지 보여주고 동의를 받음
+      const imgs = Object.keys(pendingImages).length + (data.thumbnailFile ? 1 : 0);
+      const lines = [
+        editing ? `기존 글 수정: ${data.title.trim()}` : `새 글 작성: ${data.title.trim()}`,
+        status === "draft" ? "상태: 임시저장 (홈페이지에 보이지 않음)" : "상태: 공개",
+        `글 주소: /pages/columns/${safeSlug(data.slug) || "(자동 생성)"}.html`,
+        imgs ? `새로 올라가는 사진: ${imgs}장` : "새로 올라가는 사진: 없음",
+        "", "다른 글은 건드리지 않습니다. 이대로 GitHub 에 저장할까요?"
+      ];
+      if (!confirm(lines.join("\n"))) { $("saveMsg").textContent = ""; busy = false; return; }
+    }
     const r = await backend.save(data);
     editing = r.slug; $("f_slug").value = r.slug; thumbData = null; thumbFile = null;
     if (r.sha) {
-      $("content").querySelectorAll("img[data-upload]").forEach((img) => { img.src = `/assets/img/columns/${img.getAttribute("data-upload")}`; img.removeAttribute("data-upload"); });
+      $("content").querySelectorAll("img[data-upload]").forEach((img) => { img.src = `${SITE()}/assets/img/columns/${img.getAttribute("data-upload")}`; img.removeAttribute("data-upload"); });
       thumbPath = (await backend.get(r.slug)).thumbnail || thumbPath;
     }
     $("btnPreview").disabled = status === "draft"; $("btnDelete").classList.remove("hidden"); $("formTitle").textContent = "칼럼 수정";
@@ -736,7 +758,7 @@ async function del(slug) {
   } catch (e) { toast(e.message, true); }
 }
 async function rebuild() {
-  try { const r = await backend.rebuild(); toast(r.hook ? "Netlify 에 재생성을 요청했습니다 (1~2분)" : `전체 재생성 완료 · 공개 글 ${r.published}편` + (r.imported ? ` · 가져온 글 ${r.imported}편` : "")); if ((location.hash || "#list") === "#list") loadList(); }
+  try { const r = await backend.rebuild(); toast(r.hook ? "Cloudflare 에 재생성을 요청했습니다 (1~2분)" : `전체 재생성 완료 · 공개 글 ${r.published}편` + (r.imported ? ` · 가져온 글 ${r.imported}편` : "")); if ((location.hash || "#list") === "#list") loadList(); }
   catch (e) { toast(e.message, true); }
 }
 

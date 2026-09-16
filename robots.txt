@@ -5,4 +5,4 @@ Disallow: /admin/
 Disallow: /pages/columns/_data/
 Disallow: /pages/columns/_template.html
 
-Sitemap: https://www.jeonghanclinic.kr/sitemap.xml
+Sitemap: https://www.junghani.co.kr/sitemap.xml

@@ -9,3 +9,6 @@ Thumbs.db
 
 # 칼럼 HTML 은 빌드 때 JSON 에서 생성되므로 저장소에 넣지 않음 (index.html 과 _template.html 은 유지)
 pages/columns/20*.html
+
+# 빌드 산출물 (Cloudflare Pages 가 만듦)
+dist/

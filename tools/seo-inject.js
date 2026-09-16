@@ -16,7 +16,7 @@
 const fs = require("fs");
 const path = require("path");
 
-// 사이트 주소 우선순위: Netlify 가 주는 URL(도메인 연결 시 자동 반영) → admin/config.json 의 siteUrl → 임시값
+// 사이트 주소 우선순위: 환경변수 URL·SITE_URL → admin/config.json 의 siteUrl → 임시값
 let CFG_URL = "";
 try { CFG_URL = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "admin", "config.json"), "utf8")).siteUrl || ""; } catch (e) {}
 const SITE_URL = (process.env.URL || process.env.SITE_URL || CFG_URL || "https://www.jeonghanclinic.kr").replace(/\/+$/, "");
