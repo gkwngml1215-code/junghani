@@ -295,3 +295,18 @@ html, body { overflow-x: hidden; }
   .footer-grid { grid-template-columns: 1fr; gap: 26px; }
   .floating a { width: 54px; height: 54px; font-size: 11px; }
 }
+
+/* FAQ (메인 페이지에서도 사용) */
+.faq { border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary {
+  cursor: pointer; padding: 18px 40px 18px 44px; font-weight: 700; font-size: 16px; position: relative; list-style: none; color: var(--primary-dark);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: "Q"; position: absolute; left: 6px; top: 16px; color: var(--accent); font-weight: 900; font-size: 18px; }
+.faq summary::after { content: "+"; position: absolute; right: 10px; top: 14px; font-size: 22px; color: var(--muted); font-weight: 300; }
+.faq details[open] summary::after { content: "−"; }
+.faq .a { padding: 0 20px 20px 44px; color: #555; font-size: 15px; position: relative; }
+.faq .a::before { content: "A"; position: absolute; left: 6px; top: -2px; color: var(--primary); font-weight: 900; font-size: 18px; }
+
+#faq .faq { max-width: 860px; margin: 0 auto; }
