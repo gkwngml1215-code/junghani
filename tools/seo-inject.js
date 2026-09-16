@@ -17,9 +17,43 @@ const fs = require("fs");
 const path = require("path");
 
 // 사이트 주소 우선순위: 환경변수 URL·SITE_URL → admin/config.json 의 siteUrl → 임시값
-let CFG_URL = "";
-try { CFG_URL = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "admin", "config.json"), "utf8")).siteUrl || ""; } catch (e) {}
-const SITE_URL = (process.env.URL || process.env.SITE_URL || CFG_URL || "https://www.jeonghanclinic.kr").replace(/\/+$/, "");
+let CFG = {};
+try { CFG = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "admin", "config.json"), "utf8")); } catch (e) {}
+const SITE_URL = (process.env.URL || process.env.SITE_URL || CFG.siteUrl || "https://www.junghani.co.kr").replace(/\/+$/, "");
+// 예전에 쓰던 임시 도메인 — 페이지 안에 남아 있으면 현재 주소로 바꿈
+const OLD_URLS = ["https://www.jeonghanclinic.kr", "https://jeonghanclinic.kr"];
+const { execFileSync } = require("child_process");
+
+// 페이지별 keywords (네이버용). 칼럼은 어드민 입력값을 씀
+const KEYWORDS = {
+  "/index.html": "울산 한의원, 성안동 한의원, 울산 추나요법, 울산 안면비대칭, 울산 턱관절, 울산 한방다이어트, 울산 중구 한의원, 정한의원",
+  "/booking.html": "울산 정한의원 예약, 성안동 한의원 예약, 네이버 예약 한의원, 울산 한의원 전화",
+  "/pages/pain/index.html": "울산 통증 한의원, 울산 허리 통증, 울산 목 통증, 울산 어깨 통증, 성안동 통증 치료",
+  "/pages/pain/chuna.html": "울산 추나요법, 추나 건강보험, 추나요법 비용, 울산 추나 잘하는 곳, 성안동 추나",
+  "/pages/pain/disc.html": "울산 허리디스크 한의원, 울산 목디스크, 디스크 추나, 울산 디스크 비수술",
+  "/pages/pain/shoulder.html": "울산 오십견 한의원, 울산 어깨 통증, 회전근개 한의원, 울산 어깨 침",
+  "/pages/pain/others.html": "울산 무릎 통증 한의원, 울산 손목 통증, 울산 발목 염좌, 울산 두통 한의원",
+  "/pages/facial/index.html": "울산 안면비대칭, 안면비대칭 교정 한의원, 울산 얼굴 비대칭, 안면비대칭 추나, 울산 안면비대칭 잘하는 곳",
+  "/pages/facial/tmj.html": "울산 턱관절 한의원, 턱관절 교정, 턱관절 통증 한의원, 울산 턱 소리, 턱관절 추나",
+  "/pages/digestive/indigestion.html": "울산 소화불량 한의원, 담적 한의원, 울산 담적, 만성 소화불량 한약, 울산 위장 한의원",
+  "/pages/digestive/reflux.html": "울산 역류성식도염 한의원, 역류성식도염 한약, 울산 속쓰림, 역류성식도염 침",
+  "/pages/diet/index.html": "울산 한방다이어트, 울산 다이어트 한의원, 체질 다이어트, 다이어트 한약 울산, 성안동 다이어트",
+  "/pages/diet/constitution-test.html": "체질 검사 한의원, 울산 체질 다이어트, 4계절 체질, 체성분 검사 한의원",
+  "/pages/diet/5-step-prescription.html": "다이어트 한약 처방, 울산 다이어트 한약, 한방 다이어트 단계, 요요 없는 다이어트",
+  "/pages/about/index.html": "울산 정한의원, 성안동 한의원 소개, 울산 중구 한의원, 정한의원 시설",
+  "/pages/about/doctor.html": "정석환 원장, 울산 한의사, 정한의원 원장, 추나 전문 한의사, 안면비대칭 전문 한의사",
+  "/pages/about/location.html": "울산 정한의원 위치, 성안로 188, 성안동 한의원 주차, 울산 중구 한의원 오시는 길",
+  "/pages/columns/index.html": "울산 한의원 칼럼, 정석환 원장 칼럼, 추나 칼럼, 안면비대칭 칼럼, 한방 건강 정보"
+};
+
+// 파일의 마지막 수정일: git 커밋 날짜 → 없으면 오늘
+function lastModOf(file) {
+  try {
+    const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", path.relative(ROOT, file)], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  } catch (e) {}
+  return TODAY;
+}
 
 const CLINIC = {
   name: "울산 정한의원",
@@ -66,7 +100,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) return ["node_modules", "tools", "components", "admin", "_data"].includes(e.name) ? [] : walk(p);
+    if (e.isDirectory()) return ["node_modules", "tools", "components", "admin", "_data", "dist", ".git"].includes(e.name) ? [] : walk(p);
     return [p];
   });
 }
@@ -82,6 +116,7 @@ function attr(tag, name) {
 }
 function abs(p) {
   if (!p) return "";
+  for (const old of OLD_URLS) if (p.startsWith(old)) p = p.slice(old.length);
   if (/^https?:/.test(p)) return p;
   return SITE_URL + p.replace(/\/index\.html$/, "/");
 }
@@ -232,7 +267,7 @@ function buildJsonLd(info, file, url) {
     isPartOf: { "@id": SITE_URL + "/#website" },
     about: { "@id": SITE_URL + "/#clinic" },
     primaryImageOfPage: info.image,
-    dateModified: info.article ? info.article.modified : TODAY
+    dateModified: info.article ? info.article.modified : lastModOf(file)
   };
   if (info.crumbs.length) page.breadcrumb = { "@id": url + "#breadcrumb" };
   if (!info.article) {
@@ -297,13 +332,20 @@ function buildJsonLd(info, file, url) {
 function inject(file) {
   let html = fs.readFileSync(file, "utf8");
   const url = urlFor(file);
-  const info = extract(html, file);
+  const rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
+  // 이전에 자동 생성한 블록은 빼고 읽는다 (옛 블록의 og:image 등을 다시 물려받지 않도록)
+  const info = extract(html.replace(/<!-- seo:start[\s\S]*?<!-- seo:end -->\n?/i, ""), file);
   const isArticle = !!info.article;
+  const modified = isArticle ? info.article.modified : lastModOf(file);
+  const keywords = attr(pick(html, /(<meta\s+name="keywords"[^>]*>)/i) || "", "content") || KEYWORDS[rel] || "";
 
   const block = [
     "<!-- seo:start (tools/seo-inject.js 가 자동 생성, 직접 수정하지 마세요) -->",
     `<link rel="canonical" href="${url}">`,
     `<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">`,
+    keywords && !/name="keywords"/i.test(html.replace(/<!-- seo:start[\s\S]*?<!-- seo:end -->\n?/i, "")) ? `<meta name="keywords" content="${keywords.replace(/"/g, "&quot;")}">` : "",
+    CFG.naverVerify ? `<meta name="naver-site-verification" content="${CFG.naverVerify}">` : "",
+    CFG.googleVerify ? `<meta name="google-site-verification" content="${CFG.googleVerify}">` : "",
     `<meta name="author" content="정석환 원장 · 울산 정한의원">`,
     `<meta name="geo.region" content="KR-31">`,
     `<meta name="geo.placename" content="울산광역시 중구 성안동">`,
@@ -333,7 +375,7 @@ function inject(file) {
   html = html.replace(/^\s*<meta property="og:(title|description|image)"[^>]*>\n/gim, "");
   html = html.replace(/<\/head>/i, block + "\n</head>");
   fs.writeFileSync(file, html);
-  return { url, faqs: info.faqs.length, crumbs: info.crumbs.length, article: isArticle, modified: isArticle ? info.article.modified : TODAY };
+  return { url, rel, title: info.title, description: info.description, faqs: info.faqs.length, crumbs: info.crumbs.length, article: isArticle, modified };
 }
 
 // ---------- 실행 ----------
@@ -357,9 +399,33 @@ const sitemap =
   `\n</urlset>\n`;
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 
-// robots.txt
+// robots.txt — 검색엔진 + AI 검색 크롤러 허용 (후한의원 사이트와 같은 기준), 데이터 수집용 Bytespider 는 차단
+const AI_BOTS = ["GPTBot", "ChatGPT-User", "OAI-SearchBot", "Google-Extended", "PerplexityBot", "ClaudeBot", "anthropic-ai", "Applebot-Extended", "CCBot", "Yeti", "NaverBot"];
 fs.writeFileSync(
   path.join(ROOT, "robots.txt"),
-  `User-agent: *\nAllow: /\nDisallow: /tools/\nDisallow: /admin/\nDisallow: /pages/columns/_data/\nDisallow: /pages/columns/_template.html\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+  `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /pages/columns/_data/\nDisallow: /pages/columns/_template.html\nDisallow: /components/\n\nSitemap: ${SITE_URL}/sitemap.xml\n\n` +
+    AI_BOTS.map((b) => `User-agent: ${b}\nAllow: /\n`).join("\n") +
+    `\nUser-agent: Bytespider\nDisallow: /\n`
 );
-console.log(`\n${entries.length} pages updated · sitemap.xml · robots.txt  (SITE_URL = ${SITE_URL})`);
+
+// llms.txt — 생성형 AI 가 사이트를 요약해 인용할 때 읽는 파일
+const pageOf = (rel) => entries.find((e) => e.rel === rel);
+const line = (rel, label) => { const p = pageOf(rel); return p ? `- [${label || p.title.split("|")[0].trim()}](${p.url}): ${p.description}` : ""; };
+const mainPages = [
+  ["/pages/pain/index.html", "통증질환"], ["/pages/pain/chuna.html", "추나요법"], ["/pages/pain/disc.html", "목·허리디스크"], ["/pages/pain/shoulder.html", "오십견·어깨"], ["/pages/pain/others.html", "기타 통증"],
+  ["/pages/facial/index.html", "안면비대칭교정"], ["/pages/facial/tmj.html", "턱관절교정"],
+  ["/pages/digestive/indigestion.html", "소화불량·담적"], ["/pages/digestive/reflux.html", "역류성식도염"],
+  ["/pages/diet/index.html", "한방다이어트"], ["/pages/diet/constitution-test.html", "체질 검사"], ["/pages/diet/5-step-prescription.html", "5단계 처방"],
+  ["/pages/about/index.html", "한의원 소개"], ["/pages/about/doctor.html", "의료진"], ["/pages/about/location.html", "오시는 길"], ["/booking.html", "진료 예약"]
+];
+const columns = entries.filter((e) => e.article).map((e) => `- [${e.title.split("|")[0].trim()}](${e.url}): ${e.description}`);
+const hoursText = CLINIC.openingHours.map((o) => `${o.days.map((d) => ({ Monday: "월", Tuesday: "화", Wednesday: "수", Thursday: "목", Friday: "금", Saturday: "토" })[d]).join("·")} ${o.opens}-${o.closes}`).join(", ");
+fs.writeFileSync(
+  path.join(ROOT, "llms.txt"),
+  `# ${CLINIC.name}\n\n> ${CLINIC.addressRegion} ${CLINIC.addressLocality} ${CLINIC.streetAddress}에 있는 한의원. 추나요법 중심의 통증 치료, 15년 경력의 안면비대칭·턱관절 교정, 소화불량·역류성식도염 등 소화기질환, 체질 맞춤 한방다이어트를 진료합니다. 대표원장 ${DOCTOR.name}.\n\n` +
+    `## 주요 정보\n${mainPages.map(([r, l]) => line(r, l)).filter(Boolean).join("\n")}\n\n` +
+    `## 원장 칼럼\n- [원장 칼럼 목록](${SITE_URL}/pages/columns/)\n${columns.join("\n")}\n\n` +
+    `## 병원 정보\n- 주소: ${CLINIC.addressRegion} ${CLINIC.addressLocality} ${CLINIC.streetAddress}\n- 전화: ${CLINIC.telephone.replace("+82-", "0")}\n- 진료시간: ${hoursText}, 일요일·공휴일 휴진\n- 대표원장: ${DOCTOR.name} (${DOCTOR.memberOf.join(", ")})\n- 사업자등록번호: 317-98-01694\n- 네이버 예약: https://m.booking.naver.com/booking/13/bizes/169408\n- 카카오톡 채널: https://pf.kakao.com/_Exlcmxj\n- 블로그: https://blog.naver.com/jeonghani9975\n\n` +
+    `## 안내\n- 사이트맵: ${SITE_URL}/sitemap.xml\n- 이 사이트의 의학 정보는 일반적인 안내이며 진단·치료를 대신하지 않습니다. 개인별 치료 결과는 다를 수 있습니다.\n`
+);
+console.log(`\n${entries.length} pages updated · sitemap.xml · robots.txt · llms.txt  (SITE_URL = ${SITE_URL})`);

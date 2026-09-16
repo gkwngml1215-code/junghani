@@ -12,3 +12,7 @@
 # 이미지·CSS·JS 는 일주일 캐시 (파일이 바뀌면 배포 시 새로 내려감)
 /assets/*
   Cache-Control: public, max-age=604800
+
+# 헤더·푸터 조각 파일은 검색 제외
+/components/*
+  X-Robots-Tag: noindex
