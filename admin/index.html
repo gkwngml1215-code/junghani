@@ -585,7 +585,7 @@ async function loadConfig() {
   $("rememberRow").classList.toggle("hidden", !isGh);
   $("btnRebuild").textContent = isGh ? "🔄 재생성 안내 (Cloudflare)" : "🔄 전체 다시 생성 (SEO 갱신)";
   $("ghKeyBox").classList.toggle("hidden", !isGh);
-  if (isGh) { $("btnLogout").textContent = "🚪 접속 키 해제"; updateKeyStatus(token ? "ok" : "", token ? "연결됨 ✓" : "미연결 — 아래에 키를 입력하세요"); }
+  if (isGh) { updateKeyStatus(token ? "ok" : "", token ? "연결됨 ✓" : "미연결 — 아래에 키를 입력하세요"); }
   $("navSiteColumns").href = SITE() + "/pages/columns/";
   $("navSiteHome").href = SITE() + "/";
 }
@@ -600,7 +600,12 @@ async function login(e) {
 }
 function logout() {
   token = ""; sessionStorage.removeItem("adminToken"); localStorage.removeItem("adminToken");
-  if (backend === gh) { updateKeyStatus("", "미연결 — 아래에 키를 입력하세요"); $("kbInput").value = ""; location.hash = "#list"; loadList(); return; }
+  if (backend === gh) {
+    // 저장된 GitHub 키를 지우고, 브라우저가 기억한 아이디·비밀번호도 잊게 한 뒤 다시 묻게 한다
+    updateKeyStatus("", "미연결 — 아래에 키를 입력하세요"); $("kbInput").value = "";
+    fetch(location.pathname, { headers: { Authorization: "Basic " + btoa("logout:" + Date.now()) }, cache: "no-store" }).catch(() => {}).finally(() => location.reload());
+    return;
+  }
   $("app").classList.add("hidden"); $("login").classList.remove("hidden");
 }
 function updateKeyStatus(cls, text) { const el = $("kbStatus"); if (!el) return; el.className = "kb-status" + (cls ? " " + cls : ""); el.textContent = text; }
@@ -617,7 +622,12 @@ async function saveKey() {
     if ((location.hash || "#list") === "#list") loadList();
   } catch (e) { token = ""; updateKeyStatus("bad", "연결 실패"); toast(e.message, true); }
 }
-function clearKey() { if (!token) { toast("연결된 키가 없습니다"); return; } if (confirm("이 브라우저에 저장된 GitHub 접속 키를 지울까요? (GitHub 쪽 키는 그대로 남습니다)")) logout(); }
+function clearKey() {
+  if (!token) { toast("연결된 키가 없습니다"); return; }
+  if (!confirm("이 브라우저에 저장된 GitHub 접속 키를 지울까요? (GitHub 쪽 키는 그대로 남습니다)")) return;
+  token = ""; localStorage.removeItem("adminToken"); sessionStorage.removeItem("adminToken");
+  updateKeyStatus("", "미연결 — 아래에 키를 입력하세요"); $("kbInput").value = ""; location.hash = "#list"; loadList();
+}
 
 async function boot() {
   try {
