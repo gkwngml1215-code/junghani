@@ -132,6 +132,19 @@
   .toast.show { opacity:1; transform:none; }
   .toast.err { background:var(--danger); }
 
+  /* GitHub 접속 키 (메뉴 맨 아래) */
+  .keybox { margin: 18px 16px 0; padding: 14px 12px; border-top: 1px solid rgba(255,255,255,.12); font-size: 12.5px; color: #cfd8d3; }
+  .keybox .kb-title { font-weight: 700; margin-bottom: 6px; color: #fff; }
+  .keybox .kb-status { margin-bottom: 8px; color: #90a099; }
+  .keybox .kb-status.ok { color: #9ad3b5; }
+  .keybox .kb-status.bad { color: #f2a59d; }
+  .keybox input { width: 100%; padding: 8px 10px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; background: rgba(255,255,255,.06); color: #fff; font-size: 12.5px; margin-bottom: 6px; }
+  .keybox input::placeholder { color: #7f8f88; }
+  .keybox .kb-btns { display: flex; gap: 6px; }
+  .keybox .kb-btns button { flex: 1; padding: 7px 0; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font-size: 12.5px; }
+  .keybox .kb-btns button.primary { background: var(--p); border-color: var(--p); }
+  .keybox .kb-help { margin-top: 8px; color: #90a099; line-height: 1.5; }
+
   @media (max-width: 900px) {
     #app { grid-template-columns:1fr; } aside { position:static; height:auto; } main { padding:20px 16px; }
     .row { grid-template-columns:1fr; } .row > label { padding:14px 16px 4px; } .row > .field { padding:0 16px 14px; }
@@ -164,8 +177,15 @@
       <a href="/pages/columns/" id="navSiteColumns" target="_blank">🌐 홈페이지 칼럼 보기</a>
       <a href="/" id="navSiteHome" target="_blank">🏠 홈페이지 메인</a>
       <button onclick="rebuild()" id="btnRebuild">🔄 전체 다시 생성 (SEO 갱신)</button>
-      <button onclick="logout()">🚪 로그아웃</button>
+      <button onclick="logout()" id="btnLogout">🚪 로그아웃</button>
     </nav>
+    <div class="keybox hidden" id="ghKeyBox">
+      <div class="kb-title">🔑 GitHub 접속 키</div>
+      <div class="kb-status" id="kbStatus">미연결</div>
+      <input type="password" id="kbInput" placeholder="github_pat_… 붙여넣기" autocomplete="off">
+      <div class="kb-btns"><button type="button" class="primary" onclick="saveKey()">저장</button><button type="button" onclick="clearKey()">해제</button></div>
+      <div class="kb-help">GitHub → Settings → Developer settings → Fine-grained tokens 에서 발급 (배포가이드 5단계)</div>
+    </div>
   </aside>
 
   <main>
@@ -447,8 +467,9 @@ const gh = {
   name: "github",
   base() { return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}`; },
   async req(p, opt = {}) {
+    if (!token) throw new Error("GitHub 접속 키가 연결되지 않았습니다. 왼쪽 메뉴 맨 아래에 키를 넣고 [저장]을 누르세요.");
     const res = await fetch(this.base() + p, { ...opt, headers: { Accept: opt.raw ? "application/vnd.github.raw+json" : "application/vnd.github+json", Authorization: "Bearer " + token, "X-GitHub-Api-Version": "2022-11-28", ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
-    if (res.status === 401) { logout(); throw new Error("접속 키가 만료되었거나 올바르지 않습니다. 새 키를 발급해 주세요"); }
+    if (res.status === 401) { token = ""; localStorage.removeItem("adminToken"); sessionStorage.removeItem("adminToken"); updateKeyStatus("bad", "키가 거부됨 — 다시 입력"); throw new Error("접속 키가 만료되었거나 올바르지 않습니다. 왼쪽 아래에서 새 키를 넣어 주세요."); }
     if (res.status === 404 && opt.allow404) return null;
     if (opt.raw) { if (!res.ok) throw new Error("GitHub 오류 " + res.status); return res.text(); }
     const data = await res.json().catch(() => ({}));
@@ -563,6 +584,8 @@ async function loadConfig() {
   $("loginHelp").classList.toggle("hidden", !isGh);
   $("rememberRow").classList.toggle("hidden", !isGh);
   $("btnRebuild").textContent = isGh ? "🔄 재생성 안내 (Cloudflare)" : "🔄 전체 다시 생성 (SEO 갱신)";
+  $("ghKeyBox").classList.toggle("hidden", !isGh);
+  if (isGh) { $("btnLogout").textContent = "🚪 접속 키 해제"; updateKeyStatus(token ? "ok" : "", token ? "연결됨 ✓" : "미연결 — 아래에 키를 입력하세요"); }
   $("navSiteColumns").href = SITE() + "/pages/columns/";
   $("navSiteHome").href = SITE() + "/";
 }
@@ -575,7 +598,26 @@ async function login(e) {
     await boot();
   } catch (err) { token = ""; $("loginErr").textContent = err.message; }
 }
-function logout() { token = ""; sessionStorage.removeItem("adminToken"); localStorage.removeItem("adminToken"); $("app").classList.add("hidden"); $("login").classList.remove("hidden"); }
+function logout() {
+  token = ""; sessionStorage.removeItem("adminToken"); localStorage.removeItem("adminToken");
+  if (backend === gh) { updateKeyStatus("", "미연결 — 아래에 키를 입력하세요"); $("kbInput").value = ""; location.hash = "#list"; loadList(); return; }
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+}
+function updateKeyStatus(cls, text) { const el = $("kbStatus"); if (!el) return; el.className = "kb-status" + (cls ? " " + cls : ""); el.textContent = text; }
+async function saveKey() {
+  const key = $("kbInput").value.trim();
+  if (!key) { toast("키를 붙여넣은 뒤 저장을 누르세요", true); return; }
+  updateKeyStatus("", "확인 중…");
+  try {
+    token = await gh.login(key);
+    localStorage.setItem("adminToken", token);
+    $("kbInput").value = "";
+    updateKeyStatus("ok", "연결됨 ✓");
+    toast("GitHub 연결 완료");
+    if ((location.hash || "#list") === "#list") loadList();
+  } catch (e) { token = ""; updateKeyStatus("bad", "연결 실패"); toast(e.message, true); }
+}
+function clearKey() { if (!token) { toast("연결된 키가 없습니다"); return; } if (confirm("이 브라우저에 저장된 GitHub 접속 키를 지울까요? (GitHub 쪽 키는 그대로 남습니다)")) logout(); }
 
 async function boot() {
   try {
@@ -583,7 +625,7 @@ async function boot() {
     $("login").classList.add("hidden"); $("app").classList.remove("hidden");
     const sel = $("f_category"); sel.innerHTML = '<option value="">카테고리</option>' + meta.categories.map((c) => `<option>${c}</option>`).join("");
     route();
-  } catch (e) { logout(); if (e.message) $("loginErr").textContent = e.message; }
+  } catch (e) { if (backend === gh) { toast(e.message, true); } else { logout(); if (e.message) $("loginErr").textContent = e.message; } }
 }
 window.addEventListener("hashchange", route);
 async function route() {
@@ -767,7 +809,7 @@ async function rebuild() {
   await loadConfig();
   const qsToken = new URLSearchParams(location.search).get("token");
   if (qsToken) { token = qsToken; sessionStorage.setItem("adminToken", token); history.replaceState(null, "", location.pathname + location.hash); }
-  if (token) boot(); else $("login").classList.remove("hidden");
+  if (backend === gh || token) boot(); else $("login").classList.remove("hidden");
 })();
 </script>
 </body>
