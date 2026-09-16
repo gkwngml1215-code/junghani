@@ -14,7 +14,7 @@
 - 할 수 있는 것: 칼럼 목록 보기, 새 글 쓰기(제목·작성자·카테고리·description·keywords·schema·내용 편집기·썸네일·alt값 + 핵심 요약·FAQ·참고 자료), 수정, 삭제, 임시저장, 미리보기, 전체 다시 생성
 - 저장하면 글 HTML 생성 → 목록 갱신 → SEO 데이터·sitemap 갱신까지 자동
 - 자세한 사용법: `pages/columns/칼럼 작성 가이드.md`
-- **인터넷 어드민(배포 후):** `https://홈페이지주소/admin/` 에서 GitHub 접속 키로 로그인하면 어느 컴퓨터에서나 칼럼을 쓸 수 있습니다. 글은 GitHub 저장소 `pages/columns/_data/`에 저장되고, Netlify 가 `tools/build.js` 로 페이지를 자동 생성합니다. 설정·발급 방법은 `배포가이드.md`. 로컬 어드민(비밀번호)도 그대로 동작하지만 로컬에서 쓴 글은 GitHub 에 올려야 반영됩니다.
+- **인터넷 어드민(배포 후):** `https://www.junghani.co.kr/admin/` 에서 GitHub 접속 키로 로그인하면 어느 컴퓨터에서나 칼럼을 쓸 수 있습니다. 글은 GitHub 저장소 `pages/columns/_data/`에 저장되고, Netlify 가 `tools/build.js` 로 페이지를 자동 생성합니다. 설정·발급 방법은 `배포가이드.md`. 로컬 어드민(비밀번호)도 그대로 동작하지만 로컬에서 쓴 글은 GitHub 에 올려야 반영됩니다.
 
 ## 2. 폴더 구조
 
