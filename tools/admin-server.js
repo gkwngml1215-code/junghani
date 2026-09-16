@@ -174,13 +174,20 @@ function serveStatic(req, res, url) {
   if (p.endsWith("/")) p += "index.html";
   if (p.startsWith("/tools/") || p.startsWith("/pages/columns/_data/")) return send(res, 403, "forbidden", "text/plain");
   const file = path.join(ROOT, p);
+  const stream = (f) => {
+    res.writeHead(200, { "Content-Type": MIME[path.extname(f).toLowerCase()] || "application/octet-stream", "Cache-Control": "no-store" });
+    fs.createReadStream(f).pipe(res);
+  };
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) {
       if (!err && st.isDirectory()) { res.writeHead(302, { Location: p + "/" }); return res.end(); }
+      // 확장자 없는 주소는 .html 파일로 (Cloudflare Pages 와 같은 동작: /pages/pain/chuna → chuna.html)
+      if (!path.extname(file) && fs.existsSync(file + ".html")) return stream(file + ".html");
+      const nf = path.join(ROOT, "404.html");
+      if (fs.existsSync(nf)) { res.writeHead(404, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }); return fs.createReadStream(nf).pipe(res); }
       return send(res, 404, "<h1>404</h1><p>" + p + "</p>", "text/html; charset=utf-8");
     }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream", "Cache-Control": "no-store" });
-    fs.createReadStream(file).pipe(res);
+    stream(file);
   });
 }
 

@@ -114,16 +114,19 @@ function attr(tag, name) {
   const m = tag.match(new RegExp(name + '\\s*=\\s*"([^"]*)"')) || tag.match(new RegExp(name + "\\s*=\\s*'([^']*)'"));
   return m ? decode(m[1]) : "";
 }
+// 주소 규칙 (Cloudflare Pages 와 동일): /dir/index.html → /dir/ , /page.html → /page
+function cleanPath(p) {
+  return p.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
+}
 function abs(p) {
   if (!p) return "";
   for (const old of OLD_URLS) if (p.startsWith(old)) p = p.slice(old.length);
   if (/^https?:/.test(p)) return p;
-  return SITE_URL + p.replace(/\/index\.html$/, "/");
+  return SITE_URL + (/\.(html)$/.test(p) ? cleanPath(p) : p);
 }
 function urlFor(file) {
-  let rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
-  if (rel.endsWith("/index.html")) rel = rel.slice(0, -"index.html".length);
-  return SITE_URL + rel;
+  const rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
+  return SITE_URL + cleanPath(rel);
 }
 function pick(html, re) {
   const m = html.match(re);
@@ -379,7 +382,7 @@ function inject(file) {
 }
 
 // ---------- 실행 ----------
-const files = walk(ROOT).filter((f) => f.endsWith(".html") && !path.basename(f).startsWith("_") && !/구현가이드/.test(f));
+const files = walk(ROOT).filter((f) => f.endsWith(".html") && !path.basename(f).startsWith("_") && !/구현가이드/.test(f) && path.basename(f) !== "404.html");
 const entries = [];
 for (const f of files) {
   const r = inject(f);

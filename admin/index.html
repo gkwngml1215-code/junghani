@@ -161,7 +161,7 @@
     <nav>
       <a href="#list" id="navList" class="active">📋 칼럼 목록</a>
       <a href="#new" id="navNew">✏️ 새 칼럼 쓰기</a>
-      <a href="/pages/columns/index.html" id="navSiteColumns" target="_blank">🌐 홈페이지 칼럼 보기</a>
+      <a href="/pages/columns/" id="navSiteColumns" target="_blank">🌐 홈페이지 칼럼 보기</a>
       <a href="/" id="navSiteHome" target="_blank">🏠 홈페이지 메인</a>
       <button onclick="rebuild()" id="btnRebuild">🔄 전체 다시 생성 (SEO 갱신)</button>
       <button onclick="logout()">🚪 로그아웃</button>
@@ -310,7 +310,7 @@
         <div class="form">
           <div class="row">
             <label>글 주소 (슬러그)<small>영문 소문자·숫자·하이픈. 비우면 자동 생성. 공개 후 바꾸면 주소가 바뀝니다</small></label>
-            <div class="field"><div class="inline"><span class="fixed" style="color:var(--muted)">/pages/columns/</span><input type="text" id="f_slug" placeholder="2026-10-01-tmj-clicking-sound"><span class="fixed" style="color:var(--muted)">.html</span></div></div>
+            <div class="field"><div class="inline"><span class="fixed" style="color:var(--muted)">/pages/columns/</span><input type="text" id="f_slug" placeholder="2026-10-01-tmj-clicking-sound"></div></div>
           </div>
           <div class="row">
             <label>발행일</label>
@@ -439,7 +439,7 @@ const localBackend = {
   remove: (slug) => api("/api/columns/" + slug, { method: "DELETE" }),
   async insertImageFile(file) { const data = await readFile(file); const r = await api("/api/upload", { method: "POST", body: JSON.stringify({ name: file.name, data }) }); return r.path; },
   rebuild: () => api("/api/rebuild", { method: "POST" }),
-  postUrl: (slug) => `/pages/columns/${slug}.html`
+  postUrl: (slug) => `/pages/columns/${slug}`
 };
 
 // ---------- 백엔드 2: GitHub 저장소 (배포된 사이트) ----------
@@ -541,7 +541,7 @@ const gh = {
     await fetch(cfg.buildHook, { method: "POST", mode: "no-cors" });
     return { published: "-", hook: true };
   },
-  postUrl: (slug) => `${SITE()}/pages/columns/${slug}.html`,
+  postUrl: (slug) => `${SITE()}/pages/columns/${slug}`,
   // Cloudflare Pages 빌드가 끝나 새 커밋이 반영될 때까지 기다림 (최대 4분)
   async waitDeploy(sha, onTick) {
     const started = Date.now();
@@ -563,7 +563,7 @@ async function loadConfig() {
   $("loginHelp").classList.toggle("hidden", !isGh);
   $("rememberRow").classList.toggle("hidden", !isGh);
   $("btnRebuild").textContent = isGh ? "🔄 재생성 안내 (Cloudflare)" : "🔄 전체 다시 생성 (SEO 갱신)";
-  $("navSiteColumns").href = SITE() + "/pages/columns/index.html";
+  $("navSiteColumns").href = SITE() + "/pages/columns/";
   $("navSiteHome").href = SITE() + "/";
 }
 async function login(e) {
@@ -721,7 +721,7 @@ async function save(status) {
       const lines = [
         editing ? `기존 글 수정: ${data.title.trim()}` : `새 글 작성: ${data.title.trim()}`,
         status === "draft" ? "상태: 임시저장 (홈페이지에 보이지 않음)" : "상태: 공개",
-        `글 주소: /pages/columns/${safeSlug(data.slug) || "(자동 생성)"}.html`,
+        `글 주소: /pages/columns/${safeSlug(data.slug) || "(자동 생성)"}`,
         imgs ? `새로 올라가는 사진: ${imgs}장` : "새로 올라가는 사진: 없음",
         "", "다른 글은 건드리지 않습니다. 이대로 GitHub 에 저장할까요?"
       ];

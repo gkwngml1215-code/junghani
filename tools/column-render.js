@@ -59,10 +59,17 @@ function deletePost(slug) {
 }
 
 // ---------- 본문 가공: h2 에 id 부여 + 목차 ----------
+// 내부 링크를 배포 주소 규칙(확장자 없음, /dir/)으로 통일 — 어드민에서 .html 로 써도 자동 정리
+function cleanLinks(html) {
+  return String(html || "")
+    .replace(/href="\/index\.html"/g, 'href="/"')
+    .replace(/href="(\/[^"#?]*?)\/index\.html((?:[#?][^"]*)?)"/g, 'href="$1/$2"')
+    .replace(/href="(\/[^"#?]*?)\.html((?:[#?][^"]*)?)"/g, 'href="$1$2"');
+}
 function processContent(html) {
   let i = 0;
   const toc = [];
-  const out = String(html || "").replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (m, attrs, inner) => {
+  const out = cleanLinks(html).replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (m, attrs, inner) => {
     i++;
     const id = "s" + i;
     toc.push({ id, text: textOf(inner) });
@@ -78,7 +85,7 @@ function renderPost(post, neighbors) {
   const thumb = post.thumbnail || DEFAULT_THUMB;
   const summary = (post.summary || []).filter(Boolean);
   const faqs = (post.faqs || []).filter((f) => f.q && f.a);
-  const refs = (post.references || []).filter(Boolean);
+  const refs = (post.references || []).filter(Boolean).map(cleanLinks);
   const minutes = post.readingMinutes || readingMinutes(post.content);
   const prev = neighbors && neighbors.prev;
   const next = neighbors && neighbors.next;
@@ -107,7 +114,7 @@ ${customSchema ? `<script type="application/ld+json" data-custom-schema>${custom
     <article class="post" data-category="${esc(post.category)}" data-published="${esc(post.published)}" data-modified="${esc(post.modified || post.published)}" data-image="${esc(thumb)}">
 
       <header class="post-head">
-        <div class="breadcrumb" style="color:var(--muted);opacity:1"><a href="/index.html">홈</a> &gt; <a href="/pages/columns/index.html">원장칼럼</a> &gt; ${esc(breadcrumbShort)}</div>
+        <div class="breadcrumb" style="color:var(--muted);opacity:1"><a href="/">홈</a> &gt; <a href="/pages/columns/">원장칼럼</a> &gt; ${esc(breadcrumbShort)}</div>
         <span class="cat">${esc(post.category)}</span>
         <h1>${esc(post.title)}</h1>
         <div class="post-meta">
@@ -157,13 +164,13 @@ ${refs.map((r) => `            <li>${r}</li>`).join("\n")}
         <img src="/assets/img/doctor/doctor-portrait.jpg" alt="정석환 원장">
         <div>
           <h3>글쓴이 · 정석환 원장 (한의사)</h3>
-          <p>울산 정한의원 대표원장. 대한 척추추나학회·대한 면역약침학회·대한 한의통증제형학회 정회원. 척추·턱관절·얼굴의 균형을 함께 살피는 추나 중심 진료를 합니다. <a href="/pages/about/doctor.html">의료진 소개 보기</a></p>
+          <p>울산 정한의원 대표원장. 대한 척추추나학회·대한 면역약침학회·대한 한의통증제형학회 정회원. 척추·턱관절·얼굴의 균형을 함께 살피는 추나 중심 진료를 합니다. <a href="/pages/about/doctor">의료진 소개 보기</a></p>
         </div>
       </div>
 
       <div class="post-nav">
-        ${prev ? `<a href="/pages/columns/${esc(prev.slug)}.html"><span>이전 글</span>${esc(prev.title)}</a>` : `<a href="/pages/columns/index.html"><span>목록</span>원장칼럼 전체 보기</a>`}
-        ${next ? `<a href="/pages/columns/${esc(next.slug)}.html" class="next"><span>다음 글</span>${esc(next.title)}</a>` : `<a href="/pages/columns/index.html" class="next"><span>목록</span>원장칼럼 전체 보기</a>`}
+        ${prev ? `<a href="/pages/columns/${esc(prev.slug)}"><span>이전 글</span>${esc(prev.title)}</a>` : `<a href="/pages/columns/"><span>목록</span>원장칼럼 전체 보기</a>`}
+        ${next ? `<a href="/pages/columns/${esc(next.slug)}" class="next"><span>다음 글</span>${esc(next.title)}</a>` : `<a href="/pages/columns/" class="next"><span>목록</span>원장칼럼 전체 보기</a>`}
       </div>
 
       <div class="page-cta">
@@ -190,7 +197,7 @@ ${refs.map((r) => `            <li>${r}</li>`).join("\n")}
 
 function renderCard(post) {
   const thumb = post.thumbnail || DEFAULT_THUMB;
-  return `      <a href="/pages/columns/${esc(post.slug)}.html" class="post-card">
+  return `      <a href="/pages/columns/${esc(post.slug)}" class="post-card">
         <div class="thumb"><img src="${esc(thumb)}" alt="${esc(post.thumbnailAlt || post.title)}" loading="lazy"></div>
         <div class="body">
           <span class="cat">${esc(post.category)}</span>
