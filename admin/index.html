@@ -174,6 +174,7 @@
     <nav>
       <a href="#list" id="navList" class="active">📋 칼럼 목록</a>
       <a href="#new" id="navNew">✏️ 새 칼럼 쓰기</a>
+      <a href="#site" id="navSite">🏥 홈페이지 설정</a>
       <a href="/pages/columns/" id="navSiteColumns" target="_blank">🌐 홈페이지 칼럼 보기</a>
       <a href="/" id="navSiteHome" target="_blank">🏠 홈페이지 메인</a>
       <button onclick="rebuild()" id="btnRebuild">🔄 전체 다시 생성 (SEO 갱신)</button>
@@ -352,6 +353,141 @@
         <button class="btn danger" id="btnDelete" onclick="del()" class="hidden">삭제</button>
       </div>
     </section>
+
+    <!-- 홈페이지 설정 -->
+    <section id="viewSite" class="hidden">
+      <div class="topbar">
+        <h1>홈페이지 설정</h1>
+        <span class="msg" id="siteMsg" style="font-size:13px;color:var(--muted)"></span>
+      </div>
+      <p style="margin:0 0 16px;color:var(--muted);font-size:13.5px">여기서 고친 값은 홈페이지의 상단·하단·예약 페이지·오시는 길·검색 정보에 한꺼번에 반영됩니다. 저장 후 1~2분 뒤 홈페이지에서 확인하세요.</p>
+
+      <details class="extra" open><summary>기본 정보 <small>병원명 · 원장 · 전화 · 주소</small></summary><div class="form">
+        <div class="row">
+          <label>병원명</label>
+          <div class="field"><input type="text" id="s_name" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>대표원장<small>이름만</small></label>
+          <div class="field"><input type="text" id="s_doctor" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>대표전화<small>하이픈 포함</small></label>
+          <div class="field"><input type="text" id="s_phone" placeholder="052-242-2244"></div>
+        </div>
+        <div class="row">
+          <label>이메일</label>
+          <div class="field"><input type="text" id="s_email" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>사업자등록번호</label>
+          <div class="field"><input type="text" id="s_bizNo" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>주소<small>시/도 · 구/군 · 도로명 상세</small></label>
+          <div class="field"><div class="inline"><input type="text" id="s_region" placeholder="울산광역시"><input type="text" id="s_city" placeholder="중구"><input type="text" id="s_street" placeholder="성안로 188, 2층 201호" style="flex:2"></div></div>
+        </div>
+        <div class="row">
+          <label>짧은 주소<small>메인 화면 카드에 쓰는 한 줄</small></label>
+          <div class="field"><input type="text" id="s_addressShort" placeholder="울산 중구 성안로 188, 2층"></div>
+        </div>
+        <div class="row">
+          <label>주변 안내<small>근처 랜드마크</small></label>
+          <div class="field"><input type="text" id="s_landmark" placeholder="성안동 농협사거리"></div>
+        </div>
+        <div class="row">
+          <label>주차 안내</label>
+          <div class="field"><input type="text" id="s_parking" placeholder="건물 지하주차장 이용 가능"></div>
+        </div>
+      </div></details>
+
+      <details class="extra" open><summary>진료시간 <small>표·하단·검색 정보에 모두 반영</small></summary><div class="form">
+        <div class="row">
+          <label>월·화·수·금</label>
+          <div class="field"><div class="inline"><input type="time" id="s_weekdayOpen" style="width:auto"><span class="fixed">~</span><input type="time" id="s_weekdayClose" style="width:auto"></div></div>
+        </div>
+        <div class="row">
+          <label>목요일<small>비고는 괄호 안에 표시</small></label>
+          <div class="field"><div class="inline"><input type="time" id="s_thuOpen" style="width:auto"><span class="fixed">~</span><input type="time" id="s_thuClose" style="width:auto"><input type="text" id="s_thuNote" placeholder="오후 진료"></div></div>
+        </div>
+        <div class="row">
+          <label>토요일</label>
+          <div class="field"><div class="inline"><input type="time" id="s_satOpen" style="width:auto"><span class="fixed">~</span><input type="time" id="s_satClose" style="width:auto"><input type="text" id="s_satNote" placeholder="점심시간 없이 진료"></div></div>
+        </div>
+        <div class="row">
+          <label>점심시간</label>
+          <div class="field"><div class="inline"><input type="time" id="s_lunchStart" style="width:auto"><span class="fixed">~</span><input type="time" id="s_lunchEnd" style="width:auto"></div></div>
+        </div>
+        <div class="row">
+          <label>휴진</label>
+          <div class="field"><input type="text" id="s_closedText" placeholder="일요일 · 공휴일 휴진"></div>
+        </div>
+        <div class="row">
+          <label>안내 문구<small>진료시간 표 아래 한 줄. 강조는 &lt;strong&gt;…&lt;/strong&gt;</small></label>
+          <div class="field"><textarea id="s_note" style="min-height:70px"></textarea></div>
+        </div>
+      </div></details>
+
+      <details class="extra" open><summary>예약 · 채널 링크 <small>버튼과 하단 링크</small></summary><div class="form">
+        <div class="row">
+          <label>네이버 예약</label>
+          <div class="field"><input type="text" id="s_naverBooking" placeholder="https://m.booking.naver.com/…"></div>
+        </div>
+        <div class="row">
+          <label>카카오톡 채널</label>
+          <div class="field"><input type="text" id="s_kakao" placeholder="https://pf.kakao.com/…"></div>
+        </div>
+        <div class="row">
+          <label>네이버 블로그</label>
+          <div class="field"><input type="text" id="s_blog" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>네이버 플레이스(지도)</label>
+          <div class="field"><input type="text" id="s_naverMap" placeholder=""></div>
+        </div>
+      </div></details>
+
+      <details class="extra" open><summary>검색 설정 <small>메인 페이지 제목·설명, 소유확인 코드</small></summary><div class="form">
+        <div class="row">
+          <label>메인 제목<small>검색 결과에 나오는 제목 (60자 내외)</small></label>
+          <div class="field"><input type="text" id="s_homeTitle" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>메인 설명<small>검색 결과 요약문 (120~150자)</small></label>
+          <div class="field"><textarea id="s_homeDescription" style="min-height:70px"></textarea></div>
+        </div>
+        <div class="row">
+          <label>네이버 소유확인 코드<small>서치어드바이저에서 받은 content 값만</small></label>
+          <div class="field"><input type="text" id="s_naverVerify" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>구글 소유확인 코드<small>서치콘솔에서 받은 content 값만</small></label>
+          <div class="field"><input type="text" id="s_googleVerify" placeholder=""></div>
+        </div>
+      </div></details>
+
+      <details class="extra" open><summary>공지 띠 <small>홈페이지 맨 위에 한 줄 (휴진 안내 등)</small></summary><div class="form">
+        <div class="row">
+          <label>표시</label>
+          <div class="field"><label style="display:flex;align-items:center;gap:8px;font-weight:400"><input type="checkbox" id="s_noticeEnabled" style="width:auto"> 홈페이지 맨 위에 공지 띠 표시</label></div>
+        </div>
+        <div class="row">
+          <label>문구<small>예) 10월 3일(금) 개천절 휴진입니다</small></label>
+          <div class="field"><input type="text" id="s_noticeText" placeholder=""></div>
+        </div>
+        <div class="row">
+          <label>링크<small>선택. 누르면 이동할 주소</small></label>
+          <div class="field"><input type="text" id="s_noticeLink" placeholder="/booking"></div>
+        </div>
+      </div></details>
+
+      <div class="actionbar">
+        <button class="btn primary" onclick="saveSite()">저장하고 홈페이지에 반영</button>
+        <button class="btn" onclick="loadSiteForm()">되돌리기</button>
+        <span class="spacer"></span>
+        <span class="msg" id="siteSaveMsg"></span>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -459,6 +595,8 @@ const localBackend = {
   remove: (slug) => api("/api/columns/" + slug, { method: "DELETE" }),
   async insertImageFile(file) { const data = await readFile(file); const r = await api("/api/upload", { method: "POST", body: JSON.stringify({ name: file.name, data }) }); return r.path; },
   rebuild: () => api("/api/rebuild", { method: "POST" }),
+  getSite: () => api("/api/site"),
+  async saveSite(site) { return api("/api/site", { method: "POST", body: JSON.stringify(site) }); },
   postUrl: (slug) => `/pages/columns/${slug}`
 };
 
@@ -563,6 +701,15 @@ const gh = {
     return { published: "-", hook: true };
   },
   postUrl: (slug) => `${SITE()}/pages/columns/${slug}`,
+  async getSite() {
+    const text = await this.req(`/contents/site.json?ref=${cfg.branch}`, { raw: true, allow404: true });
+    if (text == null) throw new Error("저장소에 site.json 이 없습니다");
+    return JSON.parse(text);
+  },
+  async saveSite(site) {
+    const sha = await this.commit([{ path: "site.json", content: JSON.stringify(site, null, 2) + "\n" }], "홈페이지 설정 변경");
+    return { ok: true, sha };
+  },
   // Cloudflare Pages 빌드가 끝나 새 커밋이 반영될 때까지 기다림 (최대 4분)
   async waitDeploy(sha, onTick) {
     const started = Date.now();
@@ -642,11 +789,65 @@ async function route() {
   const h = location.hash || "#list";
   $("navList").classList.toggle("active", h === "#list");
   $("navNew").classList.toggle("active", h === "#new");
-  if (h === "#new") { resetForm(); show("form"); }
+  $("navSite").classList.toggle("active", h === "#site");
+  if (h === "#site") { show("site"); await loadSiteForm(); }
+  else if (h === "#new") { resetForm(); show("form"); }
   else if (h.startsWith("#edit=")) { await loadPost(h.slice(6)); show("form"); }
   else { await loadList(); show("list"); }
 }
-function show(v) { $("viewList").classList.toggle("hidden", v !== "list"); $("viewForm").classList.toggle("hidden", v !== "form"); window.scrollTo(0, 0); }
+function show(v) { $("viewList").classList.toggle("hidden", v !== "list"); $("viewForm").classList.toggle("hidden", v !== "form"); $("viewSite").classList.toggle("hidden", v !== "site"); window.scrollTo(0, 0); }
+
+// ---------- 홈페이지 설정 (site.json) ----------
+const SITE_FIELDS = [
+  ["s_name", "clinic.name"], ["s_doctor", "clinic.doctor"], ["s_phone", "clinic.phone"], ["s_email", "clinic.email"], ["s_bizNo", "clinic.bizNo"],
+  ["s_region", "clinic.region"], ["s_city", "clinic.city"], ["s_street", "clinic.street"], ["s_addressShort", "clinic.addressShort"], ["s_landmark", "clinic.landmark"], ["s_parking", "clinic.parking"],
+  ["s_weekdayOpen", "hours.weekdayOpen"], ["s_weekdayClose", "hours.weekdayClose"], ["s_thuOpen", "hours.thuOpen"], ["s_thuClose", "hours.thuClose"], ["s_thuNote", "hours.thuNote"],
+  ["s_satOpen", "hours.satOpen"], ["s_satClose", "hours.satClose"], ["s_satNote", "hours.satNote"], ["s_lunchStart", "hours.lunchStart"], ["s_lunchEnd", "hours.lunchEnd"], ["s_closedText", "hours.closedText"], ["s_note", "hours.note"],
+  ["s_naverBooking", "channels.naverBooking"], ["s_kakao", "channels.kakao"], ["s_blog", "channels.blog"], ["s_naverMap", "channels.naverMap"],
+  ["s_homeTitle", "seo.homeTitle"], ["s_homeDescription", "seo.homeDescription"], ["s_naverVerify", "seo.naverVerify"], ["s_googleVerify", "seo.googleVerify"],
+  ["s_noticeEnabled", "notice.enabled"], ["s_noticeText", "notice.text"], ["s_noticeLink", "notice.link"]
+];
+const getPath = (o, p) => p.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+const setPath = (o, p, v) => { const ks = p.split("."); let x = o; ks.slice(0, -1).forEach((k) => (x = x[k] = x[k] || {})); x[ks[ks.length - 1]] = v; };
+let siteData = null;
+async function loadSiteForm() {
+  $("siteSaveMsg").textContent = ""; $("siteMsg").textContent = "불러오는 중…";
+  try {
+    siteData = await backend.getSite();
+    SITE_FIELDS.forEach(([id, p]) => { const el = $(id); const v = getPath(siteData, p); if (el.type === "checkbox") el.checked = !!v; else el.value = v == null ? "" : v; });
+    $("siteMsg").textContent = "";
+  } catch (e) { $("siteMsg").textContent = ""; toast(e.message, true); }
+}
+function collectSite() {
+  const out = JSON.parse(JSON.stringify(siteData || {}));
+  SITE_FIELDS.forEach(([id, p]) => { const el = $(id); setPath(out, p, el.type === "checkbox" ? el.checked : el.value.trim()); });
+  return out;
+}
+async function saveSite() {
+  if (busy) return;
+  const site = collectSite();
+  const errs = [];
+  if (!site.clinic.name) errs.push("병원명을 입력하세요");
+  if (!/^[\d-]{9,13}$/.test(site.clinic.phone)) errs.push("대표전화 형식을 확인하세요 (예: 052-242-2244)");
+  ["weekdayOpen", "weekdayClose", "thuOpen", "thuClose", "satOpen", "satClose", "lunchStart", "lunchEnd"].forEach((k) => { if (!/^\d{2}:\d{2}$/.test(site.hours[k] || "")) errs.push("진료시간을 모두 입력하세요"); });
+  if (site.notice.enabled && !site.notice.text) errs.push("공지 띠를 켜려면 문구를 입력하세요");
+  if (errs.length) { toast([...new Set(errs)].join("\n"), true); return; }
+  if (backend === gh && !confirm("홈페이지 설정을 GitHub 에 저장하고 홈페이지에 반영할까요?\n(칼럼 등 다른 내용은 바뀌지 않습니다)")) return;
+  busy = true; $("siteSaveMsg").textContent = "저장 중…";
+  try {
+    const r = await backend.saveSite(site);
+    siteData = site;
+    if (r.sha) {
+      $("siteSaveMsg").textContent = "GitHub 저장 완료 · 홈페이지 반영 중 (보통 1~2분)…";
+      const ok = await gh.waitDeploy(r.sha, (s) => ($("siteSaveMsg").textContent = `GitHub 저장 완료 · 홈페이지 반영 중 ${s}초…`));
+      $("siteSaveMsg").textContent = ok ? "홈페이지 반영 완료 ✔" : "저장은 됐지만 반영 확인이 늦어집니다. 잠시 후 홈페이지를 새로고침해 보세요";
+    } else {
+      $("siteSaveMsg").textContent = `저장 완료 · 페이지 ${r.changed}개 갱신${r.seo === false ? " (SEO 스크립트 오류 — 콘솔 확인)" : ""}`;
+    }
+    toast("홈페이지 설정을 저장했습니다");
+  } catch (e) { $("siteSaveMsg").textContent = ""; toast(e.message, true); }
+  busy = false;
+}
 
 // ---------- 목록 ----------
 async function loadList() {

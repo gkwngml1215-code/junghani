@@ -53,15 +53,15 @@
     <div class="quick-grid">
       <a href="/booking" class="quick-card">
         <div class="q-icon">📞</div>
-        <div><h4>예약 · 상담</h4><p>052-242-2244</p><small>네이버 예약 · 카카오톡 채널 상담 가능</small></div>
+        <div><h4>예약 · 상담</h4><p data-site="phone">052-242-2244</p><small>네이버 예약 · 카카오톡 채널 상담 가능</small></div>
       </a>
       <a href="/pages/about/location" class="quick-card">
         <div class="q-icon">🕒</div>
-        <div><h4>진료시간</h4><p>평일 09:30 ~ 19:00</p><small>목요일 14:30~19:00 · 토요일 09:30~14:00 · 일·공휴일 휴진</small></div>
+        <div><h4>진료시간</h4><p data-site="hoursSummary">평일 09:30 ~ 19:00</p><small data-site="hoursSummarySub">목요일 14:30~19:00 · 토요일 09:30~14:00 · 일요일·공휴일 휴진</small></div>
       </a>
       <a href="/pages/about/location" class="quick-card">
         <div class="q-icon">📍</div>
-        <div><h4>오시는 길</h4><p>울산 중구 성안로 188, 2층</p><small>성안동 농협사거리 · 지하주차장 이용 가능</small></div>
+        <div><h4>오시는 길</h4><p data-site="addressShort">울산 중구 성안로 188, 2층</p><small data-site="landmarkParkingShort">성안동 농협사거리 · 건물 지하주차장 이용 가능</small></div>
       </a>
     </div>
   </div>
@@ -193,23 +193,23 @@
     <div class="info-grid">
       <div class="info-box">
         <h3>🕒 진료시간</h3>
-        <table class="hours-table">
+        <table class="hours-table" data-site="hoursTable">
           <tr><th>월 · 화 · 수 · 금</th><td>오전 9:30 ~ 오후 7:00</td></tr>
           <tr><th>목요일</th><td>오후 2:30 ~ 오후 7:00 <span class="muted small">(오후 진료)</span></td></tr>
           <tr><th>토요일</th><td>오전 9:30 ~ 오후 2:00 <span class="muted small">(점심시간 없이 진료)</span></td></tr>
           <tr><th>점심시간</th><td>오후 1:00 ~ 오후 2:30</td></tr>
           <tr><th>일요일 · 공휴일</th><td><strong style="color:#b0413e">휴진</strong></td></tr>
         </table>
-        <p class="hours-note">추나요법은 하루 진료 인원이 제한되어 있어 <strong>전화 예약 후 내원</strong>을 권해드립니다.</p>
-        <a href="tel:052-242-2244" class="btn btn-primary" style="margin-top:8px">052-242-2244 전화하기</a>
+        <p class="hours-note" data-site="hoursNote">추나요법은 하루 진료 인원이 제한되어 있어 <strong>전화 예약 후 내원</strong>을 권해드립니다.</p>
+        <a href="tel:0522422244" data-site-href="tel" class="btn btn-primary" style="margin-top:8px"><span data-site="phone">052-242-2244</span> 전화하기</a>
       </div>
       <div class="info-box">
         <h3>📍 오시는 길</h3>
         <div class="map-embed">
           <iframe src="https://maps.google.com/maps?q=%EC%9A%B8%EC%82%B0%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%A4%91%EA%B5%AC%20%EC%84%B1%EC%95%88%EB%A1%9C%20188&t=m&z=17&output=embed&hl=ko" loading="lazy" title="정한의원 위치 지도"></iframe>
         </div>
-        <p class="addr-line">울산광역시 중구 성안로 188, 2층 201호</p>
-        <p class="addr-sub">성안동 농협사거리 인근 · 건물 지하주차장 이용 가능</p>
+        <p class="addr-line" data-site="address">울산광역시 중구 성안로 188, 2층 201호</p>
+        <p class="addr-sub" data-site="landmarkParking">성안동 농협사거리 인근 · 건물 지하주차장 이용 가능</p>
         <a href="/pages/about/location" class="btn btn-outline-dark" style="margin-top:16px">자세히 보기</a>
       </div>
     </div>
@@ -243,10 +243,10 @@
       <h2>참고 견디다 더 커지기 전에</h2>
       <p>턱이 불편하다고 느끼는 순간, 허리가 찌릿한 순간이 몸이 보내는 신호입니다. 작은 불편함부터 먼저 살펴보세요.</p>
     </div>
-    <div class="tel"><small>전화 예약 · 상담</small>052-242-2244</div>
+    <div class="tel"><small>전화 예약 · 상담</small><span data-site="phone">052-242-2244</span></div>
     <div class="hero-buttons">
-      <a href="https://m.booking.naver.com/booking/13/bizes/169408" target="_blank" rel="noopener" class="btn btn-accent">네이버 예약</a>
-      <a href="https://pf.kakao.com/_Exlcmxj" target="_blank" rel="noopener" class="btn btn-outline">카카오톡 상담</a>
+      <a href="https://m.booking.naver.com/booking/13/bizes/169408" data-site-href="naverBooking" target="_blank" rel="noopener" class="btn btn-accent">네이버 예약</a>
+      <a href="https://pf.kakao.com/_Exlcmxj" data-site-href="kakao" target="_blank" rel="noopener" class="btn btn-outline">카카오톡 상담</a>
     </div>
   </div>
 </section>

@@ -15,6 +15,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 const R = require("./column-render");
+const SA = require("./site-apply");
 
 const ROOT = R.ROOT;
 const PORT = Number(process.env.PORT) || 8080;
@@ -87,6 +88,19 @@ async function api(req, res, url) {
   }
   if (!authed(req)) return send(res, 401, { error: "로그인이 필요합니다" });
 
+  // 홈페이지 설정 (site.json) 읽기 / 저장 → 페이지 반영 → SEO 갱신
+  if (p === "/api/site" && method === "GET") {
+    return send(res, 200, SA.loadSite());
+  }
+  if (p === "/api/site" && method === "POST") {
+    const b = await readBody(req);
+    if (!b || !b.clinic || !b.hours) return send(res, 400, { error: "설정 형식이 올바르지 않습니다" });
+    fs.writeFileSync(SA.SITE_FILE, JSON.stringify(b, null, 2) + "\n");
+    const r = SA.applyAll();
+    R.rebuildAll();
+    const seo = runSeo();
+    return send(res, 200, { ok: true, changed: r.changed, seo });
+  }
   if (p === "/api/meta" && method === "GET") {
     return send(res, 200, { categories: R.CATEGORIES, author: R.DEFAULT_AUTHOR, siteUrl: "http://localhost:" + PORT });
   }

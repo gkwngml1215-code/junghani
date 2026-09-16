@@ -13,6 +13,11 @@ const INDEX_FILE = path.join(COLUMNS_DIR, "index.html");
 // 카테고리·기본 작성자는 admin/config.json 에서 읽음 (어드민과 같은 값을 쓰기 위해)
 let ADMIN_CFG = {};
 try { ADMIN_CFG = JSON.parse(fs.readFileSync(path.join(ROOT, "admin", "config.json"), "utf8")); } catch (e) {}
+// 전화·예약 링크는 site.json (어드민 "홈페이지 설정") 에서 읽음
+let SITE_JSON = {};
+try { SITE_JSON = JSON.parse(fs.readFileSync(path.join(ROOT, "site.json"), "utf8")); } catch (e) {}
+const SITE_CH = SITE_JSON.channels || {};
+const SITE_PHONE = (SITE_JSON.clinic && SITE_JSON.clinic.phone) || "052-242-2244";
 const CATEGORIES = ADMIN_CFG.categories || ["통증 · 추나", "안면비대칭 · 턱관절", "소화기", "다이어트", "한의원 소식"];
 const DEFAULT_AUTHOR = ADMIN_CFG.author || "정석환 원장";
 const DEFAULT_THUMB = "/assets/img/doctor/doctor-desk.jpg";
@@ -177,9 +182,9 @@ ${refs.map((r) => `            <li>${r}</li>`).join("\n")}
         <h3>칼럼을 읽고 궁금한 점이 있다면</h3>
         <p>카카오톡 채널로 편하게 질문해 주세요. 사진 상담도 가능합니다.</p>
         <div class="btns">
-          <a href="https://m.booking.naver.com/booking/13/bizes/169408" target="_blank" rel="noopener" class="btn btn-primary">네이버 예약</a>
-          <a href="https://pf.kakao.com/_Exlcmxj" target="_blank" rel="noopener" class="btn btn-accent">카카오톡 상담</a>
-          <a href="tel:052-242-2244" class="btn btn-outline-dark">052-242-2244</a>
+          <a href="${esc(SITE_CH.naverBooking || "https://m.booking.naver.com/booking/13/bizes/169408")}" target="_blank" rel="noopener" class="btn btn-primary">네이버 예약</a>
+          <a href="${esc(SITE_CH.kakao || "https://pf.kakao.com/_Exlcmxj")}" target="_blank" rel="noopener" class="btn btn-accent">카카오톡 상담</a>
+          <a href="tel:${esc(SITE_PHONE)}" class="btn btn-outline-dark">${esc(SITE_PHONE)}</a>
         </div>
       </div>
 

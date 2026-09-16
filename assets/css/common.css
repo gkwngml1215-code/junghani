@@ -310,3 +310,8 @@ html, body { overflow-x: hidden; }
 .faq .a::before { content: "A"; position: absolute; left: 6px; top: -2px; color: var(--primary); font-weight: 900; font-size: 18px; }
 
 #faq .faq { max-width: 860px; margin: 0 auto; }
+
+/* 공지 띠 (어드민 홈페이지 설정에서 켜고 끔) */
+.notice-bar { background: var(--accent, #b8975a); color: #fff; text-align: center; font-size: 14px; padding: 9px 16px; }
+.notice-bar a, .notice-bar span { color: #fff; text-decoration: none; }
+.notice-bar a:hover { text-decoration: underline; }

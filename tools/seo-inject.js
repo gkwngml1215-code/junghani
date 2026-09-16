@@ -55,38 +55,42 @@ function lastModOf(file) {
   return TODAY;
 }
 
+// 병원 기본 정보는 site.json (어드민 "홈페이지 설정") 에서 읽음. 없으면 아래 기본값
+let SITE = {};
+try { SITE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "site.json"), "utf8")); } catch (e) {}
+const SC = SITE.clinic || {}, SH = SITE.hours || {}, SCH = SITE.channels || {}, SSEO = SITE.seo || {};
+const PHONE = SC.phone || "052-242-2244";
+
 const CLINIC = {
-  name: "울산 정한의원",
+  name: SC.name || "울산 정한의원",
   alternateName: "정한의원",
   legalName: "정한의원",
-  telephone: "+82-52-242-2244",
-  email: "gajasky@nate.com",
-  streetAddress: "성안로 188, 2층 201호",
-  addressLocality: "중구",
-  addressRegion: "울산광역시",
+  telephone: "+82-" + PHONE.replace(/^0/, ""),
+  email: SC.email || "gajasky@nate.com",
+  streetAddress: SC.street || "성안로 188, 2층 201호",
+  addressLocality: SC.city || "중구",
+  addressRegion: SC.region || "울산광역시",
   postalCode: "",
   lat: 35.5768027,
   lng: 129.3176713,
-  founder: "정석환",
+  founder: SC.doctor || "정석환",
   foundingDate: "2024-02-28",
   logo: "/assets/img/logo/logo-vertical.png",
   image: "/assets/img/hero/main-hero.jpg",
-  sameAs: [
-    "https://blog.naver.com/jeonghani9975",
-    "https://map.naver.com/p/entry/place/20115436",
-    "https://pf.kakao.com/_Exlcmxj",
-    "https://m.booking.naver.com/booking/13/bizes/169408"
-  ],
+  hasMap: SCH.naverMap || "https://map.naver.com/p/entry/place/20115436",
+  sameAs: [SCH.blog, SCH.naverMap, SCH.kakao, SCH.naverBooking].filter(Boolean),
   openingHours: [
-    { days: ["Monday", "Tuesday", "Wednesday", "Friday"], opens: "09:30", closes: "19:00" },
-    { days: ["Thursday"], opens: "14:30", closes: "19:00" },
-    { days: ["Saturday"], opens: "09:30", closes: "14:00" }
+    { days: ["Monday", "Tuesday", "Wednesday", "Friday"], opens: SH.weekdayOpen || "09:30", closes: SH.weekdayClose || "19:00" },
+    { days: ["Thursday"], opens: SH.thuOpen || "14:30", closes: SH.thuClose || "19:00" },
+    { days: ["Saturday"], opens: SH.satOpen || "09:30", closes: SH.satClose || "14:00" }
   ],
   specialties: ["추나요법", "안면비대칭교정", "턱관절교정", "목·허리디스크", "오십견", "소화불량·담적", "역류성식도염", "한방다이어트"]
 };
+if (SSEO.naverVerify) CFG.naverVerify = SSEO.naverVerify;
+if (SSEO.googleVerify) CFG.googleVerify = SSEO.googleVerify;
 
 const DOCTOR = {
-  name: "정석환",
+  name: SC.doctor || "정석환",
   jobTitle: "한의사 · 대표원장",
   url: "/pages/about/doctor.html",
   image: "/assets/img/doctor/doctor-portrait.jpg",
