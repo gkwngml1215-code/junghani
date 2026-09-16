@@ -5,3 +5,5 @@
 - `_worker.js` 는 아이디·비밀번호 잠금입니다. 지우거나 이름을 바꾸면 잠금이 풀립니다. 아이디·비밀번호는 Cloudflare 대시보드 Variables and Secrets 의 `ADMIN_USER` / `ADMIN_PASS` 입니다.
 - `config.json` 에 저장소(owner/repo/branch)와 홈페이지 주소(siteUrl)가 있습니다.
 - 로컬에서는 `node tools/admin-server.js` 로 `http://localhost:8080/admin/` 에서 같은 화면을 비밀번호로 씁니다.
+
+<!-- 배포 갱신: 2026-09-16 21:13 -->
