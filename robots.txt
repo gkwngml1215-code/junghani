@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /tools/
+Disallow: /admin/
+Disallow: /pages/columns/_data/
+Disallow: /pages/columns/_template.html
+
+Sitemap: https://www.jeonghanclinic.kr/sitemap.xml

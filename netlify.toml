@@ -1,0 +1,25 @@
+# Netlify 배포 설정 — 저장소를 연결하면 이 파일대로 자동 빌드됩니다.
+[build]
+  command = "node tools/build.js"
+  publish = "."
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# 어드민 · 빌드 정보는 검색엔진 제외, 캐시 금지
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/build-info.json"
+  [headers.values]
+    Cache-Control = "no-store"
+
+# 이미지·CSS·JS 는 오래 캐시 (파일이 바뀌면 빌드 시 새로 배포됨)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

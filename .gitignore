@@ -1,0 +1,11 @@
+# 로컬 어드민 비밀번호 (인터넷에 올리지 않음)
+tools/admin-config.json
+
+# 빌드 산출물 · 임시
+build-info.json
+node_modules/
+.DS_Store
+Thumbs.db
+
+# 칼럼 HTML 은 빌드 때 JSON 에서 생성되므로 저장소에 넣지 않음 (index.html 과 _template.html 은 유지)
+pages/columns/20*.html
