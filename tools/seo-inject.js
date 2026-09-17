@@ -8,7 +8,7 @@
  *     - canonical, robots, Open Graph, Twitter Card
  *     - JSON-LD 구조화 데이터: MedicalClinic(병원), WebSite, WebPage/MedicalWebPage,
  *       BreadcrumbList(.breadcrumb 에서 추출), FAQPage(.faq details 에서 추출),
- *       BlogPosting(원장칼럼 article.post 에서 추출), Physician(의료진 페이지)
+ *       BlogPosting(원장칼럼 article.post 에서 추출, about = 질환·치료 개체), Physician(의료진 페이지)
  *  2. sitemap.xml, robots.txt 를 다시 만든다
  *
  * 도메인이 정해지면 아래 SITE_URL 만 바꾸고 다시 실행하면 전체 페이지가 갱신됩니다.
@@ -247,6 +247,23 @@ function doctorNode(full) {
   return n;
 }
 
+// 칼럼이 다루는 질환·치료를 제목·설명에서 찾아 구조화 데이터의 about 으로 넣음
+// (검색엔진·AI 가 "이 글은 무엇에 관한 의학 글인가" 를 글자 대신 개체로 이해하도록)
+const MEDICAL_TOPICS = [
+  { re: /안면s*비대칭|얼굴s*비대칭/, node: { "@type": "MedicalCondition", name: "안면비대칭", alternateName: "Facial asymmetry" } },
+  { re: /턱관절/, node: { "@type": "MedicalCondition", name: "턱관절 장애", alternateName: ["측두하악관절 장애", "Temporomandibular joint disorder"] } },
+  { re: /허리s*디스크|요추s*추간판/, node: { "@type": "MedicalCondition", name: "허리디스크", alternateName: "요추 추간판 탈출증" } },
+  { re: /목s*디스크|경추s*추간판/, node: { "@type": "MedicalCondition", name: "목디스크", alternateName: "경추 추간판 탈출증" } },
+  { re: /오십견/, node: { "@type": "MedicalCondition", name: "오십견", alternateName: "유착성 관절낭염" } },
+  { re: /소화불량|담적/, node: { "@type": "MedicalCondition", name: "기능성 소화불량" } },
+  { re: /역류성/, node: { "@type": "MedicalCondition", name: "역류성 식도염" } },
+  { re: /다이어트|비만/, node: { "@type": "MedicalCondition", name: "비만" } },
+  { re: /추나/, node: { "@type": "MedicalTherapy", name: "추나요법" } }
+];
+function medicalTopics(text) {
+  return MEDICAL_TOPICS.filter((t) => t.re.test(text)).map((t) => t.node);
+}
+
 function buildJsonLd(info, file, url) {
   const rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
   const isHome = rel === "/index.html";
@@ -264,23 +281,24 @@ function buildJsonLd(info, file, url) {
     });
   }
 
+  const topics = info.article ? medicalTopics([info.h1, info.title, info.description].join(" ")) : [];
   const page = {
-    "@type": info.article ? "WebPage" : "MedicalWebPage",
+    "@type": "MedicalWebPage",
     "@id": url + "#webpage",
     url,
     name: info.title,
     description: info.description,
     inLanguage: "ko-KR",
     isPartOf: { "@id": SITE_URL + "/#website" },
-    about: { "@id": SITE_URL + "/#clinic" },
+    about: topics.length ? topics : { "@id": SITE_URL + "/#clinic" },
     primaryImageOfPage: info.image,
     dateModified: info.article ? info.article.modified : lastModOf(file)
   };
   if (info.crumbs.length) page.breadcrumb = { "@id": url + "#breadcrumb" };
+  page.audience = { "@type": "MedicalAudience", audienceType: "Patient" };
+  page.reviewedBy = { "@id": SITE_URL + "/#doctor" };
+  page.lastReviewed = info.article ? info.article.modified : TODAY;
   if (!info.article) {
-    page.audience = { "@type": "MedicalAudience", audienceType: "Patient" };
-    page.lastReviewed = TODAY;
-    page.reviewedBy = { "@id": SITE_URL + "/#doctor" };
     page.speakable = { "@type": "SpeakableSpecification", cssSelector: ["h1", ".lead", ".key-answer", ".summary-box"] };
   }
   graph.push(page);
@@ -313,12 +331,15 @@ function buildJsonLd(info, file, url) {
   if (info.article) {
     const a = info.article;
     graph.push({
-      "@type": ["BlogPosting", "MedicalScholarlyArticle"],
+      // 환자용 건강 칼럼 = BlogPosting. (MedicalScholarlyArticle 은 학술 논문용이라 쓰지 않음)
+      // 의학 글이라는 표시는 위의 MedicalWebPage(about·reviewedBy·audience) 가 담당
+      "@type": "BlogPosting",
       "@id": url + "#article",
       headline: info.h1 || info.title,
       description: info.description,
       abstract: a.summary.join(" "),
       articleSection: a.category,
+      ...(topics.length ? { about: topics } : {}),
       image: info.image,
       datePublished: a.published,
       dateModified: a.modified,

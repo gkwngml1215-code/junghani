@@ -156,7 +156,7 @@ async function api(req, res, url) {
     R.writePost(post);
     const count = R.rebuildAll();
     const seo = runSeo();
-    return send(res, 200, { ok: true, slug, url: post.status === "draft" ? null : `/pages/columns/${slug}.html`, published: count, seo });
+    return send(res, 200, { ok: true, slug, url: R.isLive(post) ? `/pages/columns/${slug}.html` : null, published: count, seo });
   }
   if (one && method === "DELETE") {
     const post = R.readPost(one[1]);

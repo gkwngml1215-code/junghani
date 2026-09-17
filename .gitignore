@@ -12,3 +12,7 @@ pages/columns/20*.html
 
 # 빌드 산출물 (Cloudflare Pages 가 만듦)
 dist/
+
+# wrangler 임시 폴더 · 로컬 테스트용 비밀값
+.wrangler/
+.dev.vars
