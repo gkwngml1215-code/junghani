@@ -348,7 +348,7 @@
       <div class="actionbar">
         <button class="btn primary" onclick="save('published')">저장하고 공개</button>
         <button class="btn" onclick="save('draft')">임시저장 (비공개)</button>
-        <button class="btn" id="btnPreview" onclick="preview()" disabled>미리보기</button>
+        <button class="btn" id="btnPreview" onclick="preview()">미리보기</button>
         <span class="spacer"></span>
         <span class="msg" id="saveMsg"></span>
         <button class="btn danger" id="btnDelete" onclick="del()" class="hidden">삭제</button>
@@ -507,6 +507,7 @@ let cfg = { owner: "", repo: "", branch: "main", siteUrl: "", buildHook: "", aut
 let token = sessionStorage.getItem("adminToken") || localStorage.getItem("adminToken") || "";
 let meta = { categories: [], author: "정석환 원장" };
 let editing = null; // 수정 중인 slug
+let curStatus = "draft"; // 지금 열려 있는 글의 저장 상태 (새 글은 draft) — 미리보기 상단 표시용
 let thumbData = null, thumbName = "", thumbPath = "", thumbFile = null;
 let pendingImages = {}; // GitHub 모드: 본문에 넣었지만 아직 저장 안 된 이미지 { 파일명: Uint8Array }
 let backend = null;
@@ -878,7 +879,7 @@ function resetForm() {
   $("f_author").value = meta.author; $("f_category").value = ""; $("f_published").value = today();
   $("content").innerHTML = ""; $("faqRows").innerHTML = ""; addFaq(); addFaq(); addFaq();
   $("thumbPreview").innerHTML = '<div class="no">미리보기</div>'; $("thumbName").textContent = "선택된 파일 없음"; $("thumbLib").value = "";
-  $("btnPreview").disabled = true; $("btnDelete").classList.add("hidden"); $("saveMsg").textContent = "";
+  curStatus = "draft"; $("btnDelete").classList.add("hidden"); $("saveMsg").textContent = "";
   count("f_title", "c_title", 60); count("f_description", "c_desc", 150); editorStat();
 }
 async function loadPost(slug) {
@@ -894,7 +895,7 @@ async function loadPost(slug) {
     $("f_slug").value = p.slug; $("f_published").value = p.published; $("f_shortTitle").value = p.shortTitle || "";
     $("faqRows").innerHTML = ""; (p.faqs && p.faqs.length ? p.faqs : [{}, {}, {}]).forEach((f) => addFaq(f.q, f.a));
     if (p.thumbnail) { thumbPath = p.thumbnail; $("thumbPreview").innerHTML = `<img src="${siteHref(p.thumbnail)}" alt="">`; $("thumbName").textContent = p.thumbnail.split("/").pop(); }
-    $("btnPreview").disabled = !isLive(p); $("btnDelete").classList.remove("hidden");
+    curStatus = p.status === "draft" ? "draft" : "published"; $("btnDelete").classList.remove("hidden");
     count("f_title", "c_title", 60); count("f_description", "c_desc", 150); editorStat();
   } catch (e) { toast(e.message, true); location.hash = "#list"; }
 }
@@ -992,7 +993,7 @@ async function save(status) {
     }
     const hidden = status === "draft" || isScheduled(data);
     const hiddenMsg = status === "draft" ? "임시저장했습니다 (홈페이지에는 보이지 않음)" : `예약했습니다 · ${data.published} 오전 9시쯤 자동으로 공개됩니다`;
-    $("btnPreview").disabled = hidden; $("btnDelete").classList.remove("hidden"); $("formTitle").textContent = "칼럼 수정";
+    curStatus = status; $("btnDelete").classList.remove("hidden"); $("formTitle").textContent = "칼럼 수정";
     history.replaceState(null, "", "#edit=" + r.slug);
     if (r.sha) {
       toast(status === "draft" ? "임시저장 완료 (GitHub)" : hidden ? "예약 완료 (GitHub)" : "저장 완료 · 홈페이지에 반영 중");
@@ -1006,7 +1007,48 @@ async function save(status) {
   } catch (e) { $("saveMsg").textContent = ""; toast(e.message, true); }
   busy = false;
 }
-function preview() { if (editing) window.open(backend.postUrl(editing) + "?t=" + Date.now(), "_blank"); }
+// 미리보기: 지금 화면에 입력된 내용을 홈페이지 디자인 그대로 새 탭에 보여줌 (저장 전·임시저장·예약 글도 가능).
+// tools/column-render.js 의 renderPost 와 같은 구조 — 그쪽을 바꾸면 여기도 맞춰 주세요.
+function previewHtml(d) {
+  const site = SITE();
+  const fmt = (iso) => { const [y, m, dd] = String(iso || "").split("-").map(Number); return y ? `${y}년 ${m}월 ${dd}일` : ""; };
+  let i = 0; const toc = [];
+  const body = String(d.content || "").replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, (m, attrs, inner) => { i++; toc.push({ id: "s" + i, text: inner.replace(/<[^>]+>/g, "").trim() }); return `<h2 id="s${i}"${attrs.replace(/\s*id="[^"]*"/i, "")}>${inner}</h2>`; });
+  const summary = (d.summary || []).map((x) => x.trim()).filter(Boolean);
+  const faqs = (d.faqs || []).filter((x) => x.q && x.a);
+  const refs = (d.references || []).map((x) => x.trim()).filter(Boolean);
+  const thumb = d.thumbnailData || (d.thumbnail ? siteHref(d.thumbnail) : site + "/assets/img/doctor/doctor-desk.jpg");
+  const chars = body.replace(/<[^>]+>/g, "").replace(/\s/g, "").length;
+  const state = d.status === "draft" ? "임시저장 상태" : isScheduled(d) ? `예약 발행 — ${fmt(d.published)} 오전 9시쯤 공개` : "공개 상태";
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex"><base href="${site}/"><title>[미리보기] ${esc(d.title)}</title>
+<link rel="stylesheet" href="/assets/css/common.css"><link rel="stylesheet" href="/assets/css/page.css">
+<style>.pv-bar{position:sticky;top:0;z-index:99;background:#1f3d33;color:#fff;font-size:14px;padding:10px 16px;text-align:center}.pv-bar b{color:#ffd76a}</style></head><body>
+<div class="pv-bar">미리보기 · <b>${esc(state)}</b> · 화면에 입력된 내용 기준입니다 (저장하지 않은 수정도 보입니다)</div>
+<div class="page-body"><div class="container"><article class="post">
+<header class="post-head"><div class="breadcrumb" style="color:var(--muted);opacity:1">홈 &gt; 원장칼럼 &gt; ${esc(d.shortTitle || d.title.slice(0, 24))}</div>
+<span class="cat">${esc(d.category)}</span><h1>${esc(d.title)}</h1>
+<div class="post-meta"><span class="author"><img src="/assets/img/doctor/doctor-portrait.jpg" alt="">${esc(d.author || meta.author)} · 한의사</span><span>발행 ${fmt(d.published)}</span><span>읽는 시간 약 ${Math.max(1, Math.round(chars / 500))}분</span></div></header>
+<div class="post-hero"><img src="${esc(thumb)}" alt="${esc(d.thumbnailAlt || d.title)}"></div>
+${summary.length ? `<section class="summary-box"><h2>핵심 요약</h2><ul>${summary.map((x) => `<li>${x}</li>`).join("")}</ul></section>` : ""}
+${toc.length ? `<nav class="toc"><strong>목차</strong><ol>${toc.map((t) => `<li><a href="#${t.id}">${esc(t.text)}</a></li>`).join("")}${faqs.length ? '<li><a href="#faq">자주 묻는 질문</a></li>' : ""}</ol></nav>` : ""}
+<div class="post-body">${body}
+${faqs.length ? `<h2 id="faq">자주 묻는 질문</h2><div class="faq">${faqs.map((x) => `<details open><summary>${esc(x.q)}</summary><div class="a">${esc(x.a)}</div></details>`).join("")}</div>` : ""}
+${refs.length ? `<section class="references"><h2>참고 자료</h2><ol>${refs.map((r) => `<li>${r}</li>`).join("")}</ol></section>` : ""}
+</div>
+<p class="disclaimer">본 칼럼은 의학 정보 제공을 목적으로 하며 개별 진단이나 치료를 대체하지 않습니다. 치료 효과와 기간은 개인의 상태에 따라 다를 수 있습니다.</p>
+</article></div></div></body></html>`;
+}
+function preview() {
+  const d = collect(curStatus);
+  if (!d.title.trim() && !d.content.replace(/<[^>]+>/g, "").trim()) { toast("미리 볼 내용이 없습니다", true); return; }
+  if (!d.published) d.published = today();
+  const url = URL.createObjectURL(new Blob([previewHtml(d)], { type: "text/html;charset=utf-8" }));
+  const w = window.open(url, "_blank");
+  if (!w) toast("팝업이 차단되었습니다. 주소창 오른쪽의 팝업 허용을 눌러 주세요", true);
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function openLive() { if (editing) window.open(backend.postUrl(editing) + "?t=" + Date.now(), "_blank"); }
 async function del(slug) {
   slug = slug || editing; if (!slug) return;
   if (!confirm("이 칼럼을 삭제할까요? 되돌릴 수 없습니다.")) return;
