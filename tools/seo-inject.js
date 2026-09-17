@@ -250,10 +250,10 @@ function doctorNode(full) {
 // 칼럼이 다루는 질환·치료를 제목·설명에서 찾아 구조화 데이터의 about 으로 넣음
 // (검색엔진·AI 가 "이 글은 무엇에 관한 의학 글인가" 를 글자 대신 개체로 이해하도록)
 const MEDICAL_TOPICS = [
-  { re: /안면s*비대칭|얼굴s*비대칭/, node: { "@type": "MedicalCondition", name: "안면비대칭", alternateName: "Facial asymmetry" } },
+  { re: /안면\s*비대칭|얼굴\s*비대칭/, node: { "@type": "MedicalCondition", name: "안면비대칭", alternateName: "Facial asymmetry" } },
   { re: /턱관절/, node: { "@type": "MedicalCondition", name: "턱관절 장애", alternateName: ["측두하악관절 장애", "Temporomandibular joint disorder"] } },
-  { re: /허리s*디스크|요추s*추간판/, node: { "@type": "MedicalCondition", name: "허리디스크", alternateName: "요추 추간판 탈출증" } },
-  { re: /목s*디스크|경추s*추간판/, node: { "@type": "MedicalCondition", name: "목디스크", alternateName: "경추 추간판 탈출증" } },
+  { re: /허리\s*디스크|요추\s*추간판/, node: { "@type": "MedicalCondition", name: "허리디스크", alternateName: "요추 추간판 탈출증" } },
+  { re: /목\s*디스크|경추\s*추간판/, node: { "@type": "MedicalCondition", name: "목디스크", alternateName: "경추 추간판 탈출증" } },
   { re: /오십견/, node: { "@type": "MedicalCondition", name: "오십견", alternateName: "유착성 관절낭염" } },
   { re: /소화불량|담적/, node: { "@type": "MedicalCondition", name: "기능성 소화불량" } },
   { re: /역류성/, node: { "@type": "MedicalCondition", name: "역류성 식도염" } },
