@@ -3,7 +3,7 @@
   "title": "울산안면마비 한의원, 산후 얼굴마비 치료 전 확인할 점",
   "shortTitle": "산후 안면마비 치료",
   "author": "정석환 원장",
-  "category": "안면마비",
+  "category": "안면비대칭 · 턱관절",
   "description": "산후 얼굴 한쪽이 처지거나 눈이 잘 감기지 않으면 원인 확인이 먼저입니다. 울산안면마비 한의원을 찾는 분이 알아둘 응급 신호, 수유 중 진료·약물 상담, 회복 관리 원칙을 정한의원 정석환 원장이 안내합니다.",
   "keywords": "울산안면마비 한의원, 울산 안면마비, 산후 안면마비, 수유 중 안면마비, 안면마비 치료",
   "schema": "",
@@ -41,6 +41,8 @@
     "American Stroke Association. Stroke Symptoms and Warning Signs.",
     "울산 정한의원 진료: 갑작스러운 얼굴마비는 원인 확인과 필요한 응급 평가를 우선합니다."
   ],
-  "status": "draft",
-  "updatedAt": "2026-10-07T00:00:00.000Z"
+  "status": "published",
+  "readingMinutes": 3,
+  "createdAt": "2026-10-07T04:03:04.827Z",
+  "updatedAt": "2026-10-07T04:03:04.827Z"
 }
