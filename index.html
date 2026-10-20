@@ -331,8 +331,8 @@
         <summary>발행 설정 <small>주소(슬러그) · 발행일 · 짧은 제목</small></summary>
         <div class="form">
           <div class="row">
-            <label>글 주소 (슬러그)<small>영문 소문자·숫자·하이픈. 비우면 자동 생성. 공개 후 바꾸면 주소가 바뀝니다</small></label>
-            <div class="field"><div class="inline"><span class="fixed" style="color:var(--muted)">/pages/columns/</span><input type="text" id="f_slug" placeholder="2026-10-01-tmj-clicking-sound"></div></div>
+            <label>글 주소 (슬러그)<small>영문 소문자·숫자·하이픈, 주제를 나타내는 영어 단어로(날짜는 넣지 않음). 비우면 자동 생성. 공개 후 바꾸면 주소가 바뀝니다</small></label>
+            <div class="field"><div class="inline"><span class="fixed" style="color:var(--muted)">/pages/columns/</span><input type="text" id="f_slug" placeholder="tmj-clicking-sound"></div></div>
           </div>
           <div class="row">
             <label>발행일</label>
@@ -515,7 +515,7 @@ let backend = null;
 const $ = (id) => document.getElementById(id);
 function toast(msg, err) { const t = $("toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : ""); setTimeout(() => (t.className = "toast"), err ? 4500 : 2500); }
 function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-function safeSlug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80); }
+function safeSlug(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").replace(/^\d{4}-\d{2}-\d{2}-/, "").slice(0, 80); } // 주소에 날짜는 넣지 않음 (글을 고쳐도 오래된 글처럼 보이지 않도록)
 function today() { return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); } // 한국 시간 기준
 // 예약 글: 상태는 공개인데 발행일이 아직 오지 않은 글 (tools/column-render.js 의 isLive 와 같은 규칙)
 function isScheduled(p) { return p.status !== "draft" && (p.published || "") > today(); }
@@ -657,7 +657,7 @@ const gh = {
   },
   async save(b) {
     validate(b);
-    const slug = safeSlug(b.slug) || `${b.published}-column-${Date.now().toString(36).slice(-4)}`;
+    const slug = safeSlug(b.slug) || `column-${Date.now().toString(36).slice(-6)}`;
     const existing = b.originalSlug ? await this.get(b.originalSlug).catch(() => null) : null;
     // 새 주소(slug)가 저장소에 이미 있는 글과 겹치면 멈춤 (다른 글을 덮어쓰지 않도록)
     if (!existing || existing.slug !== slug) {
