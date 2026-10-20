@@ -36,7 +36,7 @@ pages/
   digestive/                소화기질환: indigestion(소화불량·담적), reflux(역류성식도염)
   diet/                     한방다이어트: index, constitution-test, 5-step-prescription
   about/                    한의원 소개: index, doctor, location
-  columns/                  원장칼럼: index(목록, 어드민이 자동 갱신), 날짜-슬러그.html(글), _data/(글 원본 JSON), _template.html, 칼럼 작성 가이드.md
+  columns/                  원장칼럼: index(목록, 어드민이 자동 갱신), 슬러그.html(글, 주소에 날짜 없음), _data/(글 원본 JSON), _template.html, 칼럼 작성 가이드.md
 admin/
   index.html                원장칼럼 어드민 화면
 tools/

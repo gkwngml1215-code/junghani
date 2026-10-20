@@ -112,6 +112,9 @@ function renderPost(post, neighbors) {
   const prev = neighbors && neighbors.prev;
   const next = neighbors && neighbors.next;
   const customSchema = (post.schema || "").trim();
+  // 예약 발행 글은 미리 써 둔 날(modified)이 발행일보다 앞설 수 있음 → 수정일은 최소 발행일로 맞춤
+  // (수정일 < 발행일 이면 구조화 데이터 오류 + "수정 9/17, 발행 9/19" 처럼 어색하게 표시됨)
+  const modified = post.modified && post.modified > post.published ? post.modified : post.published;
   const breadcrumbShort = post.shortTitle || (post.title.length > 24 ? post.title.slice(0, 24) + "…" : post.title);
 
   return `<!DOCTYPE html>
@@ -133,7 +136,7 @@ ${customSchema ? `<script type="application/ld+json" data-custom-schema>${custom
 
 <div class="page-body">
   <div class="container">
-    <article class="post" data-category="${esc(post.category)}" data-published="${esc(post.published)}" data-modified="${esc(post.modified || post.published)}" data-image="${esc(thumb)}">
+    <article class="post" data-category="${esc(post.category)}" data-published="${esc(post.published)}" data-modified="${esc(modified)}" data-image="${esc(thumb)}">
 
       <header class="post-head">
         <div class="breadcrumb" style="color:var(--muted);opacity:1"><a href="/">홈</a> &gt; <a href="/pages/columns/">원장칼럼</a> &gt; ${esc(breadcrumbShort)}</div>
@@ -142,7 +145,7 @@ ${customSchema ? `<script type="application/ld+json" data-custom-schema>${custom
         <div class="post-meta">
           <span class="author"><img src="/assets/img/doctor/doctor-portrait.jpg" alt="${esc(post.author || DEFAULT_AUTHOR)}">${esc(post.author || DEFAULT_AUTHOR)} · 한의사</span>
           <span>발행 <time datetime="${esc(post.published)}">${fmtDate(post.published)}</time></span>
-          ${post.modified && post.modified !== post.published ? `<span>수정 <time datetime="${esc(post.modified)}">${fmtDate(post.modified)}</time></span>` : ""}
+          ${modified !== post.published ? `<span>수정 <time datetime="${esc(modified)}">${fmtDate(modified)}</time></span>` : ""}
           <span>읽는 시간 약 ${minutes}분</span>
         </div>
       </header>
@@ -264,6 +267,13 @@ function importExisting() {
   for (const f of files) {
     const slug = f.replace(/\.html$/, "");
     if (fs.existsSync(path.join(DATA_DIR, slug + ".json"))) continue;
+    // 칼럼 주소에서 날짜를 뺀 뒤(2026-10-20), 예전에 생성돼 남아 있던 "날짜-주소.html" 은
+    // 같은 글이 이미 날짜 없는 주소로 있으므로 가져오지 않고 지운다 (중복 글 방지 — 옛 주소는 _redirects 가 처리)
+    const undated = slug.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+    if (undated !== slug && fs.existsSync(path.join(DATA_DIR, undated + ".json"))) {
+      fs.unlinkSync(path.join(COLUMNS_DIR, f));
+      continue;
+    }
     const h = fs.readFileSync(path.join(COLUMNS_DIR, f), "utf8");
     const pick = (re) => (h.match(re) || [])[1] || "";
     const attr = (tag, n) => (tag.match(new RegExp(n + '="([^"]*)"')) || [])[1] || "";

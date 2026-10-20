@@ -7,6 +7,8 @@
   async function includeComponent(placeholderId, path) {
     const el = document.getElementById(placeholderId);
     if (!el) return;
+    // 배포본은 빌드 때 헤더/푸터가 HTML 에 이미 들어가 있음 (검색엔진·AI 가 메뉴·주소를 읽도록) → 다시 불러오지 않음
+    if (el.children.length) return;
     try {
       const res = await fetch(path);
       el.innerHTML = await res.text();

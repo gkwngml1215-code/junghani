@@ -42,6 +42,26 @@ for (const e of fs.readdirSync(ROOT, { withFileTypes: true })) {
   if (EXCLUDE.has(e.name)) continue;
   fs.cpSync(path.join(ROOT, e.name), path.join(DIST, e.name), { recursive: true, filter: keep });
 }
+// 공통 헤더/푸터를 각 페이지 HTML 에 직접 넣는다 (배포본 dist/ 에만 적용, 원본 파일은 그대로)
+// 원래는 nav.js 가 접속할 때 fetch 로 붙이는데, 그러면 HTML 자체에는 메뉴·주소·전화가 없어서
+// 자바스크립트를 실행하지 않는 크롤러(네이버 Yeti 일부, GPTBot·ClaudeBot 등 AI 크롤러)가 다른 페이지 링크와 병원 정보를 못 읽는다.
+const HEADER = fs.readFileSync(path.join(DIST, "components", "header.html"), "utf8").trim();
+const FOOTER = fs.readFileSync(path.join(DIST, "components", "footer.html"), "utf8").trim();
+let inlined = 0;
+(function inline(d) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    const p = path.join(d, e.name);
+    if (e.isDirectory()) { if (e.name !== "components") inline(p); continue; }
+    if (!e.name.endsWith(".html")) continue;
+    const html = fs.readFileSync(p, "utf8");
+    const out = html
+      .replace('<div id="site-header-placeholder"></div>', () => `<div id="site-header-placeholder">${HEADER}</div>`)
+      .replace('<div id="site-footer-placeholder"></div>', () => `<div id="site-footer-placeholder">${FOOTER}</div>`);
+    if (out !== html) { fs.writeFileSync(p, out); inlined++; }
+  }
+})(DIST);
+console.log(`헤더/푸터 직접 삽입: ${inlined}개 페이지`);
+
 const n = (function count(d) { return fs.readdirSync(d, { withFileTypes: true }).reduce((s, e) => s + (e.isDirectory() ? count(path.join(d, e.name)) : 1), 0); })(DIST);
 console.log(`dist/ 생성 완료 · 파일 ${n}개 · commit ${commit || "(로컬)"}`);
 console.log("빌드 완료");

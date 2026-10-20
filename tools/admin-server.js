@@ -59,7 +59,7 @@ function runSeo() {
   catch (e) { console.error("seo-inject 실패:", e.message); return false; }
 }
 function safeSlug(s) {
-  return String(s || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+  return String(s || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").replace(/^\d{4}-\d{2}-\d{2}-/, "").slice(0, 80); // 주소에 날짜는 넣지 않음
 }
 function saveUpload(name, dataUrl, prefix) {
   const m = /^data:(image\/(png|jpeg|jpg|gif|webp));base64,(.+)$/.exec(dataUrl || "");
@@ -124,7 +124,7 @@ async function api(req, res, url) {
     if (b.schema && b.schema.trim()) { try { JSON.parse(b.schema); } catch (e) { errors.push("schema 는 올바른 JSON 이어야 합니다: " + e.message); } }
     if (errors.length) return send(res, 400, { error: errors.join("\n") });
 
-    let slug = safeSlug(b.slug) || `${b.published}-column-${Date.now().toString(36).slice(-4)}`;
+    let slug = safeSlug(b.slug) || `column-${Date.now().toString(36).slice(-6)}`;
     const existing = b.originalSlug ? R.readPost(b.originalSlug) : null;
     if (existing && existing.slug !== slug) R.deletePost(existing.slug); // 슬러그 변경 시 옛 파일 제거
 

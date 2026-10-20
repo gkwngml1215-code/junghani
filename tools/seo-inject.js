@@ -46,13 +46,42 @@ const KEYWORDS = {
   "/pages/columns/index.html": "울산 한의원 칼럼, 정석환 원장 칼럼, 추나 칼럼, 안면비대칭 칼럼, 한방 건강 정보"
 };
 
-// 파일의 마지막 수정일: git 커밋 날짜 → 없으면 오늘
-function lastModOf(file) {
-  try {
-    const d = execFileSync("git", ["log", "-1", "--format=%cs", "--", path.relative(ROOT, file)], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-  } catch (e) {}
-  return TODAY;
+// ---------- 페이지 마지막 수정일 ----------
+// Cloudflare Pages 는 저장소를 얕게(최신 커밋 1개만) 받아오기 때문에, git 기록만 쓰면
+// 모든 페이지의 수정일이 "가장 최근 커밋 날짜" 로 똑같이 찍힌다 (실제로 전 페이지가 같은 날짜로 나갔던 원인).
+// 그래서 페이지 내용의 해시와 날짜를 tools/lastmod.json 에 기록해 두고, 내용이 그대로면 기록된 날짜를 쓴다.
+//  - 기록과 내용이 같음        → 기록된 날짜
+//  - 기록 없음(새 페이지)       → git 에서 그 파일의 마지막 커밋 날짜 (얕은 저장소면 최신 커밋 날짜)
+//  - 기록과 내용이 다름(수정됨) → 로컬: 오늘 / Cloudflare 빌드: 최신 커밋 날짜(= 그 수정을 올린 날)
+// 로컬(전체 기록이 있는 저장소)에서 실행하면 lastmod.json 이 갱신되니, 페이지를 고친 뒤에는 이 파일도 같이 커밋하세요.
+const crypto = require("crypto");
+const LASTMOD_FILE = path.join(__dirname, "lastmod.json");
+let LASTMOD = {};
+try { LASTMOD = JSON.parse(fs.readFileSync(LASTMOD_FILE, "utf8")); } catch (e) {}
+const gitOut = (args) => { try { return execFileSync("git", args, { cwd: path.resolve(__dirname, ".."), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch (e) { return ""; } };
+const IS_SHALLOW = gitOut(["rev-parse", "--is-shallow-repository"]) !== "false"; // git 이 없어도 "얕음" 으로 취급 (기록 파일 우선)
+const HEAD_DATE = (() => { const d = gitOut(["log", "-1", "--format=%cs"]); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ""; })();
+let lastmodChanged = false;
+
+function contentHash(html) {
+  // 자동 생성 SEO 블록은 날짜가 들어가므로 빼고 비교
+  const body = html.replace(/<!-- seo:start[\s\S]*?<!-- seo:end -->\n?/i, "").replace(/\r\n/g, "\n");
+  return crypto.createHash("sha1").update(body).digest("hex").slice(0, 16);
+}
+function lastModOf(file, html) {
+  const rel = path.relative(ROOT, file).split(path.sep).join("/");
+  const hash = contentHash(html);
+  const rec = LASTMOD[rel];
+  if (rec && rec.hash === hash && rec.date) return rec.date;
+
+  let date;
+  if (rec) date = IS_SHALLOW ? HEAD_DATE || TODAY : TODAY;
+  else {
+    const d = IS_SHALLOW ? HEAD_DATE : gitOut(["log", "-1", "--format=%cs", "--", rel]);
+    date = /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : TODAY;
+  }
+  if (!IS_SHALLOW) { LASTMOD[rel] = { hash, date }; lastmodChanged = true; }
+  return date;
 }
 
 // 병원 기본 정보는 site.json (어드민 "홈페이지 설정") 에서 읽음. 없으면 아래 기본값
@@ -264,7 +293,7 @@ function medicalTopics(text) {
   return MEDICAL_TOPICS.filter((t) => t.re.test(text)).map((t) => t.node);
 }
 
-function buildJsonLd(info, file, url) {
+function buildJsonLd(info, file, url, modified) {
   const rel = "/" + path.relative(ROOT, file).split(path.sep).join("/");
   const isHome = rel === "/index.html";
   const isDoctor = rel.endsWith("/about/doctor.html");
@@ -292,12 +321,12 @@ function buildJsonLd(info, file, url) {
     isPartOf: { "@id": SITE_URL + "/#website" },
     about: topics.length ? topics : { "@id": SITE_URL + "/#clinic" },
     primaryImageOfPage: info.image,
-    dateModified: info.article ? info.article.modified : lastModOf(file)
+    dateModified: modified
   };
   if (info.crumbs.length) page.breadcrumb = { "@id": url + "#breadcrumb" };
   page.audience = { "@type": "MedicalAudience", audienceType: "Patient" };
   page.reviewedBy = { "@id": SITE_URL + "/#doctor" };
-  page.lastReviewed = info.article ? info.article.modified : TODAY;
+  page.lastReviewed = modified;
   if (!info.article) {
     page.speakable = { "@type": "SpeakableSpecification", cssSelector: ["h1", ".lead", ".key-answer", ".summary-box"] };
   }
@@ -364,7 +393,7 @@ function inject(file) {
   // 이전에 자동 생성한 블록은 빼고 읽는다 (옛 블록의 og:image 등을 다시 물려받지 않도록)
   const info = extract(html.replace(/<!-- seo:start[\s\S]*?<!-- seo:end -->\n?/i, ""), file);
   const isArticle = !!info.article;
-  const modified = isArticle ? info.article.modified : lastModOf(file);
+  const modified = isArticle ? info.article.modified : lastModOf(file, html);
   const keywords = attr(pick(html, /(<meta\s+name="keywords"[^>]*>)/i) || "", "content") || KEYWORDS[rel] || "";
 
   const block = [
@@ -392,7 +421,7 @@ function inject(file) {
     `<meta name="twitter:title" content="${info.title.replace(/"/g, "&quot;")}">`,
     `<meta name="twitter:description" content="${info.description.replace(/"/g, "&quot;")}">`,
     `<meta name="twitter:image" content="${info.image}">`,
-    `<script type="application/ld+json">${JSON.stringify(buildJsonLd(info, file, url))}</script>`,
+    `<script type="application/ld+json">${JSON.stringify(buildJsonLd(info, file, url, modified))}</script>`,
     "<!-- seo:end -->"
   ]
     .filter(Boolean)
@@ -426,6 +455,12 @@ const sitemap =
     .join("\n") +
   `\n</urlset>\n`;
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
+
+// 페이지 수정일 기록 저장 (로컬 실행 때만 — Cloudflare 빌드에서는 저장해도 사라지므로 생략)
+if (lastmodChanged) {
+  const sorted = Object.fromEntries(Object.keys(LASTMOD).sort().map((k) => [k, LASTMOD[k]]));
+  fs.writeFileSync(LASTMOD_FILE, JSON.stringify(sorted, null, 2) + "\n");
+}
 
 // robots.txt — 검색엔진 + AI 검색 크롤러 허용 (후한의원 사이트와 같은 기준), 데이터 수집용 Bytespider 는 차단
 const AI_BOTS = ["GPTBot", "ChatGPT-User", "OAI-SearchBot", "Google-Extended", "PerplexityBot", "ClaudeBot", "anthropic-ai", "Applebot-Extended", "CCBot", "Yeti", "NaverBot"];
