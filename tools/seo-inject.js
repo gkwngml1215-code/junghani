@@ -204,7 +204,12 @@ function extract(html, file) {
           const s = pick(html, /<section class="summary-box"[\s\S]*?<ul>([\s\S]*?)<\/ul>/i);
           return s ? s.split(/<\/li>/).map(text).filter(Boolean) : [];
         })(),
-        body: text(pick(html, /<div class="post-body">([\s\S]*?)<div class="author-box">/i))
+        body: text(pick(html, /<div class="post-body">([\s\S]*?)(?:<div class="author-box">|<aside class="author-box)/i)),
+        // 참고자료 링크 → 구조화 데이터 citation
+        citations: (() => {
+          const sec = pick(html, /<section class="references"[^>]*>([\s\S]*?)<\/section>/i);
+          return [...String(sec || "").matchAll(/<a href="(https?:[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)].map((m) => ({ "@type": "CreativeWork", name: text(m[2]), url: m[1] }));
+        })()
       }
     : null;
 
@@ -377,6 +382,7 @@ function buildJsonLd(info, file, url, modified) {
       mainEntityOfPage: { "@id": url + "#webpage" },
       inLanguage: "ko-KR",
       wordCount: a.body.replace(/\s+/g, "").length,
+      ...(a.citations && a.citations.length ? { citation: a.citations } : {}),
       isAccessibleForFree: true,
       speakable: { "@type": "SpeakableSpecification", cssSelector: [".summary-box", ".key-answer"] }
     });

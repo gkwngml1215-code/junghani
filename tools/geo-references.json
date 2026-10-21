@@ -1,0 +1,243 @@
+{
+  "about": "검증된 참고자료 주소 (2026-10-21 확인). GEO 칼럼 참고자료 3개 = 국내(slot kr) 1 + 해외 임상자료(slot intl: MSD 매뉴얼/Mayo Clinic) 1 + NHS(slot nhs) 1.",
+  "references": [
+    {
+      "topic": "요통",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "요통",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=3796"
+    },
+    {
+      "topic": "요통",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "요통",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AC000182"
+    },
+    {
+      "topic": "요통",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Low Back Pain - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/bone-joint-and-muscle-disorders/low-back-and-neck-pain/low-back-pain"
+    },
+    {
+      "topic": "요통",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Back pain",
+      "url": "https://www.nhs.uk/conditions/back-pain/"
+    },
+    {
+      "topic": "허리디스크(추간판탈출증)",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "추간판탈출증(디스크)",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=3348"
+    },
+    {
+      "topic": "허리디스크(추간판탈출증)",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "추간판 탈출증",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000195"
+    },
+    {
+      "topic": "허리디스크(추간판탈출증)",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Herniated Disc - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/bone-joint-and-muscle-disorders/low-back-and-neck-pain/herniated-disc"
+    },
+    {
+      "topic": "허리디스크(추간판탈출증)",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Slipped disc",
+      "url": "https://www.nhs.uk/conditions/slipped-disc/"
+    },
+    {
+      "topic": "목통증",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "경부통증",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?medid=AA001385"
+    },
+    {
+      "topic": "목통증",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "일자목(거북목)증후군",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=5972"
+    },
+    {
+      "topic": "목통증",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Neck Pain - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/bone-joint-and-muscle-disorders/low-back-and-neck-pain/neck-pain"
+    },
+    {
+      "topic": "목통증",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Cervical spondylosis",
+      "url": "https://www.nhs.uk/conditions/cervical-spondylosis/"
+    },
+    {
+      "topic": "오십견",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "오십견(동결견, 유착관절낭염)",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=1567"
+    },
+    {
+      "topic": "오십견",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "오십견",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000192"
+    },
+    {
+      "topic": "오십견",
+      "source": "Mayo Clinic",
+      "slot": "intl",
+      "title": "Frozen shoulder - Symptoms and causes",
+      "url": "https://www.mayoclinic.org/diseases-conditions/frozen-shoulder/symptoms-causes/syc-20372684"
+    },
+    {
+      "topic": "오십견",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Frozen shoulder",
+      "url": "https://www.nhs.uk/conditions/frozen-shoulder/"
+    },
+    {
+      "topic": "턱관절 장애",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "턱관절 장애",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=3338"
+    },
+    {
+      "topic": "턱관절 장애",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "턱관절 장애",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000404"
+    },
+    {
+      "topic": "턱관절 장애",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Temporomandibular Disorders (TMDs) - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/mouth-and-dental-disorders/temporomandibular-disorders/temporomandibular-disorders-tmds"
+    },
+    {
+      "topic": "턱관절 장애",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Temporomandibular disorder",
+      "url": "https://www.nhs.uk/conditions/temporomandibular-disorder-tmd/"
+    },
+    {
+      "topic": "안면비대칭",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "안면비대칭",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?medid=AA001272"
+    },
+    {
+      "topic": "안면비대칭",
+      "source": "서울아산병원",
+      "slot": "kr",
+      "title": "안면 비대칭(Facial asymmetry)",
+      "url": "https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31764"
+    },
+    {
+      "topic": "안면비대칭",
+      "source": "NHS (Nottingham University Hospitals)",
+      "slot": "nhs",
+      "title": "Jaw surgery (orthognathic treatment)",
+      "url": "https://www.nuh.nhs.uk/orthodontics-jaw-surgery-orthognathic-treatment/"
+    },
+    {
+      "topic": "소화불량(기능성 소화불량)",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "소화불량",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6263"
+    },
+    {
+      "topic": "소화불량(기능성 소화불량)",
+      "source": "서울대학교병원",
+      "slot": "kr",
+      "title": "기능성 위장 장애",
+      "url": "https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000451"
+    },
+    {
+      "topic": "소화불량(기능성 소화불량)",
+      "source": "Mayo Clinic",
+      "slot": "intl",
+      "title": "Functional dyspepsia - Symptoms and causes",
+      "url": "https://www.mayoclinic.org/diseases-conditions/functional-dyspepsia/symptoms-causes/syc-20375709"
+    },
+    {
+      "topic": "소화불량(기능성 소화불량)",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Indigestion - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/digestive-disorders/symptoms-of-digestive-disorders/indigestion"
+    },
+    {
+      "topic": "소화불량(기능성 소화불량)",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Indigestion",
+      "url": "https://www.nhs.uk/conditions/indigestion/"
+    },
+    {
+      "topic": "역류성식도염",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "위식도역류질환",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=2057"
+    },
+    {
+      "topic": "역류성식도염",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Gastroesophageal Reflux Disease (GERD) - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/digestive-disorders/esophageal-and-swallowing-disorders/gastroesophageal-reflux-disease-gerd"
+    },
+    {
+      "topic": "역류성식도염",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Heartburn and acid reflux",
+      "url": "https://www.nhs.uk/conditions/heartburn-and-acid-reflux/"
+    },
+    {
+      "topic": "비만·체중관리",
+      "source": "국가건강정보포털(질병관리청)",
+      "slot": "kr",
+      "title": "비만",
+      "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6694"
+    },
+    {
+      "topic": "비만·체중관리",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Obesity - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/hormonal-and-metabolic-disorders/obesity-and-the-metabolic-syndrome/obesity"
+    },
+    {
+      "topic": "비만·체중관리",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Overweight and obesity in adults",
+      "url": "https://www.nhs.uk/conditions/obesity/"
+    }
+  ]
+}

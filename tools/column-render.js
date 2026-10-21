@@ -4,6 +4,7 @@
  */
 const fs = require("fs");
 const path = require("path");
+const GEOC = require("./geo-column");
 
 const ROOT = path.resolve(__dirname, "..");
 const COLUMNS_DIR = path.join(ROOT, "pages", "columns");
@@ -103,11 +104,14 @@ function processContent(html) {
 
 // ---------- HTML 렌더 ----------
 function renderPost(post, neighbors) {
-  const { html: body, toc } = processContent(post.content);
+  const processed = processContent(post.content);
+  const toc = processed.toc;
+  // 비교표는 모바일에서 가로로 밀어 볼 수 있게 감싼다
+  const body = processed.html.replace(/<table\b[\s\S]*?<\/table>/gi, (t) => `<div class="table-wrap">${t}</div>`);
   const thumb = post.thumbnail || DEFAULT_THUMB;
   const summary = (post.summary || []).filter(Boolean);
   const faqs = (post.faqs || []).filter((f) => f.q && f.a);
-  const refs = (post.references || []).filter(Boolean).map(cleanLinks);
+  const refs = GEOC.refItems(post.references).map(cleanLinks);
   const minutes = post.readingMinutes || readingMinutes(post.content);
   const prev = neighbors && neighbors.prev;
   const next = neighbors && neighbors.next;
@@ -145,15 +149,14 @@ ${customSchema ? `<script type="application/ld+json" data-custom-schema>${custom
         <div class="post-meta">
           <span class="author"><img src="/assets/img/doctor/doctor-portrait.jpg" alt="${esc(post.author || DEFAULT_AUTHOR)}">${esc(post.author || DEFAULT_AUTHOR)} · 한의사</span>
           <span>발행 <time datetime="${esc(post.published)}">${fmtDate(post.published)}</time></span>
-          ${modified !== post.published ? `<span>수정 <time datetime="${esc(modified)}">${fmtDate(modified)}</time></span>` : ""}
           <span>읽는 시간 약 ${minutes}분</span>
         </div>
       </header>
 
       <div class="post-hero"><img src="${esc(thumb)}" alt="${esc(post.thumbnailAlt || post.title)}"></div>
 
-${summary.length ? `      <section class="summary-box" aria-label="핵심 요약">
-        <h2>핵심 요약</h2>
+${summary.length ? `      <section class="summary-box" aria-label="핵심 답변">
+        <p class="summary-title">핵심 답변</p>
         <ul>
 ${summary.map((s) => `          <li>${s}</li>`).join("\n")}
         </ul>
@@ -163,35 +166,30 @@ ${toc.length ? `      <nav class="toc" aria-label="목차">
         <strong>목차</strong>
         <ol>
 ${toc.map((t) => `          <li><a href="#${t.id}">${esc(t.text)}</a></li>`).join("\n")}
-${faqs.length ? `          <li><a href="#faq">자주 묻는 질문</a></li>` : ""}
+${refs.length ? `          <li><a href="#refs">${GEOC.REF_SECTION}</a></li>` : ""}
+${faqs.length ? `          <li><a href="#faq">${GEOC.FAQ_SECTION}</a></li>` : ""}
         </ol>
       </nav>
 ` : ""}
       <div class="post-body">
 ${body}
-${faqs.length ? `
-        <h2 id="faq">자주 묻는 질문</h2>
-        <div class="faq">
-${faqs.map((f) => `          <details><summary>${esc(f.q)}</summary><div class="a">${esc(f.a)}</div></details>`).join("\n")}
-        </div>
-` : ""}
 ${refs.length ? `
-        <section class="references">
-          <h2>참고 자료</h2>
+        <section class="references" id="refs">
+          <h2>${GEOC.REF_SECTION}</h2>
           <ol>
 ${refs.map((r) => `            <li>${r}</li>`).join("\n")}
           </ol>
         </section>
 ` : ""}
+${faqs.length ? `
+        <h2 id="faq">${GEOC.FAQ_SECTION}</h2>
+        <div class="faq">
+${faqs.map((f) => `          <details><summary>${esc(f.q)}</summary><div class="a">${esc(f.a)}</div></details>`).join("\n")}
+        </div>
+` : ""}
       </div>
 
-      <div class="author-box">
-        <img src="/assets/img/doctor/doctor-portrait.jpg" alt="정석환 원장">
-        <div>
-          <h3>글쓴이 · 정석환 원장 (한의사)</h3>
-          <p>울산 정한의원 대표원장. 대한 척추추나학회·대한 면역약침학회·대한 한의통증제형학회 정회원. 척추·턱관절·얼굴의 균형을 함께 살피는 추나 중심 진료를 합니다. <a href="/pages/about/doctor">의료진 소개 보기</a></p>
-        </div>
-      </div>
+${GEOC.reviewerHtml(post)}
 
       <div class="post-nav">
         ${prev ? `<a href="/pages/columns/${esc(prev.slug)}"><span>이전 글</span>${esc(prev.title)}</a>` : `<a href="/pages/columns/"><span>목록</span>원장칼럼 전체 보기</a>`}

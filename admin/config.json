@@ -13,5 +13,24 @@
     "한의원 소식"
   ],
   "naverVerify": "",
-  "googleVerify": ""
+  "googleVerify": "",
+  "geo": {
+    "about": "GEO 칼럼 작성원칙 — region: 모든 사진 alt·칼럼 제목에 들어갈 지역 키워드(첫 번째가 기본), reviewer: 칼럼 하단 감수 원장 박스, referenceSources: 참고자료 3개에 꼭 들어갈 출처",
+    "region": [
+      "울산",
+      "성안동"
+    ],
+    "reviewer": {
+      "clinic": "울산 정한의원",
+      "name": "정석환",
+      "title": "대표원장",
+      "license": "한의사",
+      "photo": "/assets/img/doctor/doctor-portrait.jpg",
+      "url": "/pages/about/doctor",
+      "bio": "울산 정한의원 대표원장. 대한 척추추나학회·대한 면역약침학회·대한 한방피부과학회 정회원, 前 발란스후한의원 울산점 대표원장. 15년간 추나 중심 통증 치료와 안면비대칭·턱관절 교정을 진료해 왔습니다."
+    },
+    "referenceSources": [
+      "NHS"
+    ]
+  }
 }
