@@ -1,5 +1,5 @@
 {
-  "about": "검증된 참고자료 주소 (2026-10-21 확인). GEO 칼럼 참고자료 3개 = 국내(slot kr) 1 + 해외 임상자료(slot intl: MSD 매뉴얼/Mayo Clinic) 1 + NHS(slot nhs) 1.",
+  "about": "검증된 참고자료 주소 (2026-10-21 확인). GEO 칼럼 참고자료 3개 = 국내(slot kr) 1 + 해외 임상자료(slot intl: MSD 매뉴얼/Mayo Clinic) 1 + NHS(slot nhs) 1. 2026-11-24 안면신경마비(벨마비) 3건 추가(열리는지 확인함).",
   "references": [
     {
       "topic": "요통",
@@ -238,6 +238,27 @@
       "slot": "nhs",
       "title": "Overweight and obesity in adults",
       "url": "https://www.nhs.uk/conditions/obesity/"
+    },
+    {
+      "topic": "안면신경마비(벨마비)",
+      "source": "서울아산병원",
+      "slot": "kr",
+      "title": "안면 마비(Facial palsy)",
+      "url": "https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31763"
+    },
+    {
+      "topic": "안면신경마비(벨마비)",
+      "source": "MSD 매뉴얼",
+      "slot": "intl",
+      "title": "Bell Palsy - MSD Manual Consumer Version",
+      "url": "https://www.msdmanuals.com/home/brain,-spinal-cord,-and-nerve-disorders/cranial-nerve-disorders/bell-palsy"
+    },
+    {
+      "topic": "안면신경마비(벨마비)",
+      "source": "NHS",
+      "slot": "nhs",
+      "title": "Bell's palsy",
+      "url": "https://www.nhs.uk/conditions/bells-palsy/"
     }
   ]
 }
